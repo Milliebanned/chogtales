@@ -1,26 +1,340 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b0910;
+  --paper: #f6f1e7;
+  --chog: #8b5cf6;
+  --chog-2: #c4b5fd;
+  --gold: #facc15;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-chog: var(--chog);
+  --font-display: var(--font-dela);
+  --font-sfx: var(--font-bangers);
+  --font-letter: var(--font-comic);
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html,
+body {
+  background: var(--ink);
+  color: #f5f3ff;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ---------- ambient background ---------- */
+.ink-bg {
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.28), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(244, 63, 94, 0.14), transparent 60%),
+    radial-gradient(800px 600px at 50% 120%, rgba(56, 189, 248, 0.1), transparent 60%), var(--ink);
+}
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  z-index: 60;
+}
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+}
+.title-stroke {
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+}
+
+/* ---------- manga page ---------- */
+.manga-page {
+  background: var(--paper);
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0, 0, 0, 0.4);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+.panel {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: 4px solid var(--ink);
+  border-radius: 2px;
+  isolation: isolate;
+}
+.ink-filter {
+  filter: grayscale(1) contrast(1.45) brightness(1.08);
+}
+.ink-filter-soft {
+  filter: grayscale(0.85) contrast(1.25) brightness(1.05);
+}
+
+/* screentone */
+.halftone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.55) 0.9px, transparent 1.3px);
+  background-size: 5px 5px;
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+}
+
+/* effects */
+.fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.fx-speedlines {
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 9px,
+    rgba(0, 0, 0, 0.75) 9px 10px,
+    transparent 10px 23px,
+    rgba(0, 0, 0, 0.45) 23px 24px
+  );
+  mask-image: linear-gradient(90deg, #000 0%, transparent 35%, transparent 65%, #000 100%);
+  animation: speed 0.35s linear infinite;
+}
+@keyframes speed {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 24px;
+  }
+}
+.fx-focuslines {
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(0, 0, 0, 0.85) 0deg 1.2deg, transparent 1.2deg 6deg);
+  mask-image: radial-gradient(circle at 50% 50%, transparent 32%, #000 70%);
+  animation: focus 6s linear infinite;
+}
+@keyframes focus {
+  to {
+    transform: rotate(6deg) scale(1.1);
+  }
+}
+.fx-impact {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0 12%, transparent 30%),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(0, 0, 0, 0.9) 0deg 3deg, transparent 3deg 11deg);
+  mask-image: radial-gradient(circle at 50% 50%, transparent 18%, #000 60%);
+}
+.fx-rain {
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0 14px,
+    rgba(0, 0, 0, 0.35) 14px 15px
+  );
+  animation: rain 0.6s linear infinite;
+}
+@keyframes rain {
+  to {
+    background-position: -40px 120px;
+  }
+}
+.fx-sparkle {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 1) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 1px, transparent 2px);
+  background-size: 60px 60px, 37px 37px;
+  background-position: 0 0, 18px 22px;
+  mix-blend-mode: screen;
+  animation: sparkle 2.4s ease-in-out infinite alternate;
+}
+@keyframes sparkle {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fx-dark {
+  background: radial-gradient(circle at 50% 45%, transparent 25%, rgba(0, 0, 0, 0.85) 95%);
+}
+
+.shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) 2;
+}
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate(-2px, 1px) rotate(-0.4deg);
+  }
+  20%,
+  80% {
+    transform: translate(4px, -2px) rotate(0.6deg);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate(-6px, 2px) rotate(-0.8deg);
+  }
+  40%,
+  60% {
+    transform: translate(6px, -1px) rotate(0.6deg);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* lettering — lives in a strip under the art, sized to the panel */
+.panel {
+  container-type: size;
+}
+.letter-strip {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: max(3px, 1.6cqh);
+  max-height: 46%;
+  overflow: hidden;
+  padding: max(4px, 1.8cqh) max(5px, 2.2cqw);
+  background: #fff;
+  border-top: 3px solid var(--ink);
+  font-size: clamp(8px, min(4.6cqw, 6.2cqh), 15px);
+}
+.bubble {
+  font-family: var(--font-comic), "Comic Sans MS", cursive;
+  font-weight: 700;
+  color: #111;
+  background: #fff;
+  border: 2px solid #111;
+  border-radius: 1.1em;
+  padding: 0.35em 0.8em;
+  line-height: 1.15;
+  max-width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+/* free-floating bubble with a tail (landing page / dashboard only) */
+.bubble-tail {
+  position: absolute;
+  z-index: 8;
+  border-width: 2.5px;
+  border-radius: 50% / 46%;
+  padding: 0.7em 1.05em;
+  text-align: center;
+}
+.bubble-tail::after {
+  content: "";
+  position: absolute;
+  bottom: -14px;
+  left: 30%;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-right: 2.5px solid #111;
+  border-bottom: 2.5px solid #111;
+  transform: skewX(-25deg) rotate(45deg);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+.bubble-speaker {
+  display: block;
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  color: #8b5cf6;
+  margin-bottom: 0.1em;
+}
+.bubble-thought {
+  border-style: dashed;
+  font-style: italic;
+}
+.bubble-shout {
+  border-width: 3px;
+  border-radius: 0.3em;
+  font-size: 1.08em;
+  box-shadow: 3px 3px 0 #111;
+}
+.bubble-whisper {
+  border-style: dotted;
+  font-weight: 600;
+  font-size: 0.92em;
+}
+.caption-box {
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  background: #fffbea;
+  color: #111;
+  border: 2px solid #111;
+  padding: 0.3em 0.6em;
+  line-height: 1.2;
+  box-shadow: 2px 2px 0 #111;
+  text-transform: uppercase;
+  align-self: stretch;
+}
+.sfx {
+  font-family: var(--font-bangers), Impact, sans-serif;
+  position: absolute;
+  z-index: 9;
+  top: 5%;
+  max-width: 55%;
+  font-size: clamp(16px, 13cqw, 52px);
+  color: #fff;
+  -webkit-text-stroke: 2px #111;
+  paint-order: stroke fill;
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+  text-shadow: 3px 3px 0 #111;
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
+.sfx-tl {
+  left: 5%;
+}
+.sfx-tr {
+  right: 5%;
+}
+
+/* stat bars */
+.bar {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.bar > div {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* the page-turn shimmer on the read button */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: shim 2.8s ease-in-out infinite;
+}
+@keyframes shim {
+  60%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-speedlines,
+  .fx-focuslines,
+  .fx-rain,
+  .fx-sparkle,
+  .shake,
+  .shimmer::after {
+    animation: none !important;
+  }
 }
