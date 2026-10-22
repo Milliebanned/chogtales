@@ -173,11 +173,11 @@ export default function Docs() {
             </p>
           </Panel>
           {[
-            ["⚔️ Duel", "Face to face. Winner takes the street."],
-            ["🗯️ Trash-talk", "Say it loud, in front of everyone."],
-            ["🍱 Steal its food", "Its lunch, its snacks, its dignity."],
-            ["🤫 Spread a rumor", "Whisper something. Let the city do the rest."],
-            ["🎭 Prank it", "Glue, paint, a bucket over a door."],
+            ["Duel", "Face to face. Winner takes the street."],
+            ["Trash-talk", "Say it loud, in front of everyone."],
+            ["Steal its food", "Its lunch, its snacks, its dignity."],
+            ["Spread a rumor", "Whisper something. Let the city do the rest."],
+            ["Prank it", "Glue, paint, a bucket over a door."],
           ].map(([t, d]) => (
             <Panel key={t} title={t}>
               <p>{d}</p>

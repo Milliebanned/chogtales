@@ -1,5 +1,5 @@
 import { handle, HttpError } from "@/lib/api";
-import { getPublished, verifyAndUnlock } from "@/lib/library";
+import { getPublished, recordRead, verifyAndUnlock } from "@/lib/library";
 import { getSession } from "@/lib/session";
 
 export const maxDuration = 60;
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     } catch (e) {
       throw new HttpError(400, (e as Error).message);
     }
+    await recordRead(session.owner, found.pub.id);
     return { chapter: found.chapter };
   });
 }

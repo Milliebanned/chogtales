@@ -321,9 +321,9 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
     { t: state.beef ? "Beef started" : "Beef (optional)", done: !!state.beef },
   ];
   const actTabs = [
-    { id: "feed" as const, label: "Feed", emoji: "🍙", left: state.mealsLeft, max: 3 },
-    { id: "care" as const, label: "Care", emoji: "🛁", left: state.caresLeft, max: 3 },
-    { id: "beef" as const, label: "Beef", emoji: "🔥", left: state.beef ? 0 : 1, max: 1 },
+    { id: "feed" as const, label: "Feed", left: state.mealsLeft, max: 3 },
+    { id: "care" as const, label: "Care", left: state.caresLeft, max: 3 },
+    { id: "beef" as const, label: "Beef", left: state.beef ? 0 : 1, max: 1 },
   ];
 
   return (
@@ -489,7 +489,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
             <div className="seg seg-full">
               {actTabs.map((t) => (
                 <button key={t.id} onClick={() => setActTab(t.id)} data-on={actTab === t.id}>
-                  {t.emoji} {t.label} <span className="opacity-60">{t.left}/{t.max}</span>
+                  {t.label} <span className="opacity-60">{t.left}/{t.max}</span>
                 </button>
               ))}
             </div>
@@ -568,7 +568,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
           <LifePanel life={state.life} />
           <div className="card p-5">
             <div className="text-[11px] text-white/45 font-bold uppercase tracking-[0.25em]">Today in Chog City</div>
-            <p className="mt-2 text-white/85">📰 {state.event}</p>
+            <p className="mt-2 text-white/85">{state.event}</p>
             <div className="mt-6 text-[11px] text-white/45 font-bold uppercase tracking-[0.25em]">What you notice</div>
             <p className="mt-2 italic text-white/75">{state.omen}</p>
           </div>
@@ -688,7 +688,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
                           title="Remove from the Library"
                           className="rounded-lg border border-violet-400/40 bg-violet-500/15 py-1.5 text-xs text-violet-100 hover:bg-violet-500/25"
                         >
-                          {c.published === "0" ? "📚 Free" : `📚 ${Number(c.published).toLocaleString()} $CHOG`}
+                          {c.published === "0" ? "Listed · Free" : `Listed · ${Number(c.published).toLocaleString()} $CHOG`}
                         </button>
                       ) : (
                         <button
@@ -832,7 +832,7 @@ function ChapterCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={today.cover.image} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="grid h-full w-full place-items-center text-3xl">{working ? "✒️" : "📖"}</div>
+            <div className="grid h-full w-full place-items-center text-3xl">{working ? "…" : `Ch.${state.day}`}</div>
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -866,7 +866,8 @@ function ChapterCard({
   );
 }
 
-const BOND_ICON: Record<string, string> = { dead: "🕯️", missing: "❓", betrayed: "🗡️", imprisoned: "⛓️", estranged: "💔" };
+/** A small colour dot says what kind of bond it is; any status other than "alive" is spelled out. */
+const bondColor = (kind: string) => (/(lover|love|partner)/i.test(kind) ? "#f472b6" : /(nemesis|enemy|rival)/i.test(kind) ? "#f87171" : "#a78bfa");
 
 /** Who the Chog has become, the people in its life, and how it got here. */
 function LifePanel({ life }: { life: Life }) {
@@ -879,10 +880,11 @@ function LifePanel({ life }: { life: Life }) {
         <div className="mt-4 flex flex-wrap gap-2">
           {life.bonds.map((b) => {
             const st = b.status.toLowerCase();
-            const icon = Object.entries(BOND_ICON).find(([k]) => st.includes(k))?.[1] ?? (/(lover|love|partner)/i.test(b.kind) ? "❤️" : /(nemesis|enemy|rival)/i.test(b.kind) ? "⚔️" : "🤝");
+            const status = /alive|active|^$/.test(st) ? "" : ` · ${b.status}`;
             return (
               <span key={b.name} title={b.note} className={`rounded-full border px-3 py-1 text-xs ${st.includes("dead") ? "border-white/10 text-white/40 line-through" : "border-white/15 text-white/80"}`}>
-                {icon} {b.name} · <span className="text-white/50">{b.kind}</span>
+                <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: bondColor(b.kind) }} />
+                {b.name} · <span className="text-white/50">{b.kind}{status}</span>
               </span>
             );
           })}
@@ -996,7 +998,7 @@ function RoleReveal({ role, day, image, ready, onDone, onRead }: { role: Role; d
             className="rounded-full px-6 py-3 font-bold uppercase tracking-widest text-black"
             style={{ background: color }}
           >
-            {ready ? `📖 Read Chapter ${day}` : "✒️ Chapter is being drawn…"}
+            {ready ? `Read Chapter ${day}` : "Chapter is being drawn…"}
           </button>
           <button onClick={onDone} className="rounded-full border border-white/20 px-6 py-3 text-sm text-white/70">
             Close

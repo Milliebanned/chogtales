@@ -114,7 +114,7 @@ export default function Home() {
         </button>
         <div className="flex items-center gap-2">
           <a href="/library" className="rounded-full border border-violet-400/50 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-100 hover:bg-violet-500/30">
-            📚 Manga Library
+            Manga Library
           </a>
           <a href="/docs" className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/80 hover:bg-white/10">
             Read docs

@@ -70,7 +70,7 @@ function LibraryCTA() {
       </span>
       <span className="min-w-0">
         <span className="flex items-center gap-2 text-base font-semibold text-white">
-          📚 Manga Library
+          Manga Library
           <span className="rounded-full bg-violet-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>
         </span>
         <span className="mt-0.5 block text-sm text-white/65">Read other keepers&apos; manga, or buy one with $CHOG</span>
@@ -284,10 +284,10 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
 }
 
 const LOOP = [
-  { n: "01", icon: "📖", t: "Read", d: "A cover and two fully drawn pages with your Chog as the hero, picking up exactly where yesterday ended." },
-  { n: "02", icon: "⚖️", t: "Decide", d: "Every chapter ends on a hard choice with no right answer. Pick once. There's no going back." },
-  { n: "03", icon: "🍙🛁🔥", t: "Raise", d: "Feed it, bathe it, train it, scold it, or start beef. Every action secretly shapes who it becomes." },
-  { n: "04", icon: "🌙", t: "Return", d: "Overnight the next chapter is drawn from everything you did. Thief, sheriff, prophet, avenger?" },
+  { n: "01", t: "Read", d: "A cover and two fully drawn pages with your Chog as the hero, picking up exactly where yesterday ended." },
+  { n: "02", t: "Decide", d: "Every chapter ends on a hard choice with no right answer. Pick once. There's no going back." },
+  { n: "03", t: "Raise", d: "Feed it, bathe it, train it, scold it, or start beef. Every action secretly shapes who it becomes." },
+  { n: "04", t: "Return", d: "Overnight the next chapter is drawn from everything you did. Thief, sheriff, prophet, avenger?" },
 ];
 
 function Loop() {
@@ -307,7 +307,6 @@ function Loop() {
             <TiltCard className="h-full min-h-[260px]">
               <div className="flex items-start justify-between">
                 <span className="font-[family-name:var(--font-bangers)] text-5xl text-white/25">{s.n}</span>
-                <span className="text-3xl">{s.icon}</span>
               </div>
               <div className="accent mt-8 text-3xl text-white">{s.t}</div>
               <p className="mt-3 text-sm leading-relaxed text-white/60">{s.d}</p>
@@ -379,7 +378,7 @@ function Beef() {
             lands in <i>their</i> next chapter too. Chog City is shared, and the Chogs in it remember.
           </motion.p>
           <motion.div variants={rise} custom={3} className="mt-6 flex flex-wrap gap-2">
-            {["⚔️ Duel", "🗯️ Trash-talk", "🍱 Steal its food", "🤫 Spread a rumor", "🎭 Prank it"].map((b) => (
+            {["Duel", "Trash-talk", "Steal its food", "Spread a rumor", "Prank it"].map((b) => (
               <span key={b} className="chip border-orange-300/25 text-orange-100/80">
                 {b}
               </span>
@@ -473,7 +472,7 @@ function FinalCall(props: { isConnected: boolean; onSign: () => void; onDemo: ()
           <CTAs {...props} center />
         </motion.div>
         <motion.div variants={rise} custom={3} className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/55">
-          <a href="/library" className="transition hover:text-white">📚 Read the Library</a>
+          <a href="/library" className="transition hover:text-white">Read the Manga Library</a>
           <a href={OPENSEA_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition hover:text-white">
             <OpenSeaLogo className="h-6 w-6" /> No Chog yet? Get one on OpenSea ↗
           </a>

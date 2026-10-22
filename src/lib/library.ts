@@ -100,6 +100,19 @@ export function preview(chapter: Chapter): Chapter {
   return { ...chapter, pages: chapter.pages.slice(0, 1), choice: undefined, consequences: undefined, nextTime: undefined };
 }
 
+/** The viewer's shelf: what they opened in the Library, most recent first. */
+export type ShelfEntry = { id: string; at: number };
+const shelfKey = (owner: string) => `shelf:${owner.toLowerCase()}`;
+
+export async function shelfOf(owner: string): Promise<ShelfEntry[]> {
+  return (await kv.get<ShelfEntry[]>(shelfKey(owner))) ?? [];
+}
+
+export async function recordRead(owner: string, pubId: string) {
+  const list = (await shelfOf(owner)).filter((e) => e.id !== pubId);
+  await kv.set(shelfKey(owner), [{ id: pubId, at: Date.now() }, ...list].slice(0, 60));
+}
+
 export async function countRead(pubId: string) {
   await kv.set(readsKey(pubId), ((await kv.get<number>(readsKey(pubId))) ?? 0) + 1);
 }

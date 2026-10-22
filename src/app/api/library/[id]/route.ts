@@ -1,5 +1,5 @@
 import { handle, HttpError } from "@/lib/api";
-import { canRead, countRead, getPublished, preview } from "@/lib/library";
+import { canRead, countRead, getPublished, preview, recordRead } from "@/lib/library";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +10,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     const found = await getPublished(decodeURIComponent(id));
     if (!found) throw new HttpError(404, "That chapter isn't in the Library anymore");
-    const open = await canRead(found.pub, await getSession());
+    const session = await getSession();
+    const open = await canRead(found.pub, session);
     if (open) await countRead(found.pub.id);
+    if (session) await recordRead(session.owner, found.pub.id);
     return { pub: found.pub, chapter: open ? found.chapter : preview(found.chapter), locked: !open };
   });
 }
