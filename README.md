@@ -4,7 +4,7 @@
 
 Built for [Chogathon 2026](https://chogathon.chog.xyz).
 
-> **Live demo:** _link coming with the deploy_ · **Demo video:** _coming soon_
+> **Live demo:** https://chogtales.milliebanned.xyz · **Demo video:** _coming soon_
 
 ---
 
@@ -61,6 +61,7 @@ To see beef cross between stories: with Chog A, start beef with Chog B. Skip a d
 1. Connect a wallet that holds a Chog Genesis NFT on Monad with any browser wallet (MetaMask, Rabby, Phantom…). Mobile wallets via WalletConnect work when `NEXT_PUBLIC_WC_PROJECT_ID` is set.
 2. Sign the login message. It's free and sends no transaction.
 3. Your Chogs are listed automatically. Pick one and play. The day rolls over at midnight UTC.
+4. No Chog in the wallet? The app links you to the [Chog Genesis collection on OpenSea](https://opensea.io/collection/chog-genesis).
 
 ## How it works
 
