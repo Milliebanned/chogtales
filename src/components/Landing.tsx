@@ -438,6 +438,7 @@ function FinalCall(props: { isConnected: boolean; onSign: () => void; onDemo: ()
           <CTAs {...props} center />
         </motion.div>
         <motion.div variants={rise} custom={3} className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/55">
+          <a href="/library" className="transition hover:text-white">📚 Read the Library</a>
           <a href={OPENSEA_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 transition hover:text-white">
             <OpenSeaLogo className="h-6 w-6" /> No Chog yet? Get one on OpenSea ↗
           </a>
@@ -448,6 +449,8 @@ function FinalCall(props: { isConnected: boolean; onSign: () => void; onDemo: ()
           <span className="font-bold text-white/80">ChogTales</span> · The Daily Manga · built for Chogathon 2026
         </span>
         <span className="flex gap-5">
+          <a href="/docs" className="hover:text-white">Docs</a>
+          <a href="/library" className="hover:text-white">Library</a>
           <a href={REPO} target="_blank" rel="noopener noreferrer" className="hover:text-white">GitHub</a>
           <a href={OPENSEA_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white">Chog Genesis on OpenSea</a>
         </span>

@@ -49,7 +49,9 @@ export async function resolveChog(tokenId: string): Promise<ChogState> {
 export async function chapterList(state: ChogState) {
   const days = Array.from({ length: state.day }, (_, i) => i + 1).slice(-60);
   const chapters = await Promise.all(days.map((d) => kv.get<Chapter>(`chapter:${state.key}:${d}`)));
+  const pubs = await Promise.all(chapters.map((c) => (c ? kv.get<{ price: string }>(`pub:${c.id}`) : null)));
   return chapters.filter(Boolean).map((c) => ({
+    published: pubs[chapters.indexOf(c)]?.price ?? null,
     id: c!.id,
     day: c!.day,
     title: c!.title,

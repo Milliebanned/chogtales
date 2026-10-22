@@ -1,0 +1,386 @@
+/* ChogTales docs: a printed manga volume. Cream paper, black ink, screentone. */
+.docs {
+  --paper: #f6f1e7;
+  --ink: #0b0910;
+  --violet: #6d28d9;
+  padding: 0 16px 80px;
+}
+.docs-nav {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  gap: 12px;
+}
+.docs-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-dela);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+.docs-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.docs-brand span {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 20px;
+  color: #c4b5fd;
+  letter-spacing: 0;
+}
+.docs-nav div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.docs-nav div a {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.docs-nav div a:hover {
+  color: #fff;
+}
+.docs-pdf {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.docs-nav .docs-cta {
+  background: #7c3aed;
+  color: #fff;
+  font-weight: 600;
+}
+
+.doc-page {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto 36px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 44px 44px 56px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+.doc-folio {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+/* cover */
+.doc-cover {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+  min-height: 640px;
+  background: var(--ink);
+  color: #fff;
+  border: 6px solid var(--ink);
+}
+.doc-cover-art {
+  position: relative;
+  overflow: hidden;
+  border-right: 6px solid var(--ink);
+}
+.doc-cover-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.doc-cover-text {
+  position: relative;
+  padding: 44px 40px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.doc-vertical {
+  position: absolute;
+  right: 22px;
+  top: 30px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-dela);
+  font-size: 22px;
+  color: rgba(0, 0, 0, 0.75);
+}
+.doc-cover h1 {
+  font-family: var(--font-dela);
+  font-size: 84px;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+}
+.doc-cover-sub {
+  margin-top: 14px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 22px;
+  color: var(--violet);
+}
+.doc-cover-blurb {
+  margin-top: 20px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.75);
+}
+.doc-toc {
+  margin-top: 26px;
+  border-top: 3px solid var(--ink);
+  counter-reset: toc;
+}
+.doc-toc li {
+  counter-increment: toc;
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.doc-toc li::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: var(--font-bangers), Impact, sans-serif;
+  font-size: 20px;
+  color: var(--violet);
+}
+
+/* chapter heading */
+.doc-head {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+  border-bottom: 4px solid var(--ink);
+}
+.doc-chip {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+.doc-head h2 {
+  font-family: var(--font-dela);
+  font-size: 40px;
+  line-height: 1;
+}
+.doc-sfx {
+  margin-left: auto;
+  font-family: var(--font-bangers), Impact, sans-serif;
+  font-size: 46px;
+  line-height: 0.8;
+  color: #fff;
+  -webkit-text-stroke: 2.5px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-6deg);
+  white-space: nowrap;
+}
+
+/* panels */
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.doc-steps {
+  grid-template-columns: repeat(4, 1fr);
+}
+.doc-steps .doc-wide {
+  grid-column: 1 / -1;
+}
+.doc-panel {
+  border: 3.5px solid var(--ink);
+  background: #fff;
+  padding: 18px 20px;
+  break-inside: avoid;
+}
+.doc-wide {
+  grid-column: 1 / -1;
+}
+.doc-panel h3 {
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+.doc-panel p {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.78);
+}
+.doc-lead {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 21px !important;
+  line-height: 1.4 !important;
+  color: var(--ink) !important;
+}
+.doc-mono {
+  font-size: 13px !important;
+  word-break: break-all;
+}
+.doc-mono code,
+.doc-panel code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.92em;
+  background: #ede9fe;
+  padding: 1px 5px;
+}
+.doc-mono a {
+  color: var(--violet);
+  text-decoration: underline;
+}
+.doc-step-n {
+  font-family: var(--font-bangers), Impact, sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  color: var(--violet);
+}
+
+/* speech bubbles */
+.doc-bubble {
+  display: inline-block;
+  max-width: 100%;
+  margin: 4px 10px 6px 0;
+  border: 2.5px solid var(--ink);
+  border-radius: 22px;
+  background: #fff;
+  padding: 8px 16px;
+  font-family: var(--font-comic), cursive;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.doc-bubble b {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--violet);
+}
+
+/* faq */
+.doc-faq {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 22px;
+}
+.doc-qa {
+  border-left: 4px solid var(--ink);
+  padding-left: 14px;
+  break-inside: avoid;
+}
+.doc-qa p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.78);
+}
+.doc-end {
+  margin-top: 34px;
+  text-align: center;
+  font-family: var(--font-bangers), Impact, sans-serif;
+  font-size: 54px;
+  letter-spacing: 0.04em;
+}
+
+@media screen and (max-width: 760px) {
+  .doc-page {
+    padding: 28px 20px 48px;
+  }
+  .doc-cover {
+    grid-template-columns: 1fr;
+  }
+  .doc-cover-art {
+    min-height: 320px;
+    border-right: 0;
+    border-bottom: 6px solid var(--ink);
+  }
+  .doc-cover h1 {
+    font-size: 60px;
+  }
+  .doc-grid,
+  .doc-steps,
+  .doc-faq {
+    grid-template-columns: 1fr;
+  }
+  .doc-head {
+    flex-wrap: wrap;
+  }
+  .doc-head h2 {
+    font-size: 30px;
+  }
+  .doc-sfx {
+    font-size: 32px;
+  }
+}
+
+/* printing → the PDF version: one chapter per page, no nav */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html,
+  body {
+    background: var(--paper) !important;
+  }
+  body::before,
+  body::after {
+    display: none !important;
+  }
+  .docs {
+    padding: 0;
+  }
+  .docs-nav {
+    display: none;
+  }
+  .doc-page {
+    max-width: none;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .doc-cover {
+    min-height: 297mm;
+    border: 0;
+  }
+  .doc-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}

@@ -4,7 +4,7 @@
 
 Built for [Chogathon 2026](https://chogathon.chog.xyz).
 
-> **Live demo:** https://chogtales.milliebanned.xyz · **Demo video:** _coming soon_
+> **Live demo:** https://chogtales.milliebanned.xyz · **Library:** https://chogtales.milliebanned.xyz/library · **Docs:** https://chogtales.milliebanned.xyz/docs ([PDF](https://chogtales.milliebanned.xyz/chogtales-docs.pdf)) · **Demo video:** _coming soon_
 
 ---
 
@@ -42,6 +42,7 @@ Take the NFT away and there is no story. The Chog is what each part runs on:
 | 🔥 **Beef** | Challenge, trash-talk, steal from, spread a rumor about, or prank another player's Chog. It becomes the main conflict of your next chapter and lands in theirs. |
 | 🧬 **A life that remembers** | Identity, motive, relationships, wounds, open threads and a timeline carry across every chapter. |
 | 🎬 **Seasons** | 19 seven-chapter story arcs (heist, tournament, rebellion, time loop, kaiju…) with a season mystery revealed piece by piece. |
+| 📚 **Library + $CHOG** | Publish any finished chapter to the public Library, free or for a price in $CHOG. Paid chapters preview the cover and page 1; unlocking sends $CHOG straight from the reader's wallet to the creator, verified on-chain. ChogTales takes no cut. |
 | ⬇️ **PDF download** | Download any chapter, or pick several and get one book or separate files. Readable on phone or desktop. |
 | ⏩ **Draw-ahead** | Once today's actions are in, tomorrow's chapter is written and drawn in the background, so it's ready when you return. |
 
@@ -82,6 +83,7 @@ Wallet ──signature──▶ session ──ownerOf (Monad)──▶ your Chog
 - **Story:** Groq. `gpt-oss-120b` plans the chapter and `qwen3.8-27b` writes the panel script and lettering. The writer works from a series bible (`src/lib/lore.ts`), a plot bank of arcs, twists, set pieces and cliffhangers (`src/lib/plotbank.ts`, `src/lib/craft.ts`), and the Chog's full life so far.
 - **Art:** FLUX.2 [klein] on Cloudflare Workers AI, with the NFT image passed as a reference. The model's output filter rejects some images at random, so missing panels are retried with several attempts in parallel. A pre-drawn scenery library (`public/bg`) is the last fallback.
 - **Chain:** viem reads `ownerOf`, `tokenURI` and `totalSupply` from Chog Genesis (`0xc96d31f8626c6d03fae5dcd3d61e3fb9f4a73763`) on Monad mainnet (chain 143). The collection isn't enumerable, so a holder's Chogs are found with one multicall over all owners (about 2 s).
+- **$CHOG:** `0x350035555E10d9AfAF1566AaebfCeD5BA6C27777` on Monad. Library unlocks are plain ERC-20 transfers to the author, and the server checks the `Transfer` log (token, sender, recipient, amount) before unlocking. Each transaction can unlock only once.
 - **Storage:** Upstash Redis in production, a local JSON file in development.
 
 ## Tech stack

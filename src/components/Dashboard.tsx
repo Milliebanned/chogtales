@@ -32,7 +32,7 @@ interface PublicState {
   life: Life;
   decision: Decision | null;
   decisions: Record<number, string>;
-  chapters: { id: string; day: number; title: string; role: Role; tagline: string; cover: string | null; status: string }[];
+  chapters: { id: string; day: number; title: string; role: Role; tagline: string; cover: string | null; status: string; published: string | null }[];
   demo: boolean;
 }
 
@@ -82,6 +82,8 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
   const [tab, setTab] = useState<"today" | "life" | "saga">("today");
   const [actTab, setActTab] = useState<"feed" | "care" | "beef">("feed");
   const [hint, setHint] = useState("");
+  const [publishing, setPublishing] = useState<number | null>(null);
+  const [price, setPrice] = useState("0");
   const [today, setToday] = useState<ChapterResponse | null>(null);
   const [phase, setPhase] = useState<"idle" | "writing" | "inking" | "resting">("idle");
   const [line, setLine] = useState(0);
@@ -268,6 +270,21 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
       setPicker(false);
     } catch (e) {
       setError((e as Error).message);
+    }
+  }
+
+  /** Put a chapter in the public Library, free or for $CHOG paid straight to this wallet. */
+  async function publish(day: number, p: string | null) {
+    setBusy(true);
+    try {
+      await api("/api/library/publish", { method: p === null ? "DELETE" : "POST", body: JSON.stringify({ tokenId, day, price: p ?? "0" }) });
+      setPublishing(null);
+      await load();
+      sfx("chime");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -561,7 +578,10 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
       {tab === "saga" && (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-[family-name:var(--font-dela)] text-2xl text-white">My Saga</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="font-[family-name:var(--font-dela)] text-2xl text-white">My Saga</h3>
+              <a href="/library" className="text-xs text-violet-300 hover:text-white">Browse the Library →</a>
+            </div>
             {readyChapters.length > 0 && (
               <button
                 onClick={() => {
@@ -653,13 +673,65 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
                     </div>
                   </motion.button>
                   {c.status === "ready" && (
-                    <button
-                      onClick={() => downloadPdfs([c.day], true)}
-                      disabled={pdfQueue.length > 0}
-                      className="rounded-lg border border-white/15 py-1.5 text-xs text-white/70 hover:bg-white/10 disabled:opacity-50"
-                    >
-                      ⬇ PDF
-                    </button>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        onClick={() => downloadPdfs([c.day], true)}
+                        disabled={pdfQueue.length > 0}
+                        className="rounded-lg border border-white/15 py-1.5 text-xs text-white/70 hover:bg-white/10 disabled:opacity-50"
+                      >
+                        ⬇ PDF
+                      </button>
+                      {c.published !== null ? (
+                        <button
+                          onClick={() => publish(c.day, null)}
+                          disabled={busy}
+                          title="Remove from the Library"
+                          className="rounded-lg border border-violet-400/40 bg-violet-500/15 py-1.5 text-xs text-violet-100 hover:bg-violet-500/25"
+                        >
+                          {c.published === "0" ? "📚 Free" : `📚 ${Number(c.published).toLocaleString()} $CHOG`}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setPublishing(publishing === c.day ? null : c.day);
+                            setPrice("0");
+                          }}
+                          className="btn-primary py-1.5 text-xs"
+                        >
+                          Publish
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {publishing === c.day && (
+                    <div className="card space-y-2 p-2.5">
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-white/45">Publish to the Library</div>
+                      <div className="grid grid-cols-2 gap-1">
+                        {(state.demo ? ["0"] : ["0", "50", "100", "500"]).map((v) => (
+                          <button
+                            key={v}
+                            onClick={() => setPrice(v)}
+                            className={`rounded-md border px-1 py-1 text-[11px] ${price === v ? "border-violet-400 bg-violet-500/25 text-white" : "border-white/10 text-white/60 hover:border-white/30"}`}
+                          >
+                            {v === "0" ? "Free" : `${v} $CHOG`}
+                          </button>
+                        ))}
+                      </div>
+                      {!state.demo && (
+                        <input
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ""))}
+                          placeholder="Custom $CHOG"
+                          className="w-full rounded-md border border-white/10 bg-black/40 px-2 py-1 text-xs outline-none focus:border-violet-400"
+                        />
+                      )}
+                      <p className="text-[10px] leading-snug text-white/40">
+                        {state.demo ? "Demo keepers publish for free. Connect a wallet to sell for $CHOG." : "Readers pay $CHOG straight to your wallet. Page 1 stays free as a preview."}
+                      </p>
+                      <button onClick={() => publish(c.day, price || "0")} disabled={busy} className="btn-primary w-full py-1.5 text-xs">
+                        {busy ? "Publishing…" : `Publish · ${price === "0" || !price ? "Free" : `${price} $CHOG`}`}
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
