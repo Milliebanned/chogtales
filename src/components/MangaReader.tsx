@@ -98,7 +98,7 @@ export default function MangaReader({
     <motion.div className="fixed inset-0 z-50 flex flex-col bg-[#07060a]/95 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="flex items-center justify-between gap-3 px-4 py-3 text-xs uppercase tracking-[0.25em] text-white/50 sm:px-6">
         <span className="truncate">
-          Chog Chronicles · Ch.{chapter.day} · <span style={{ color }}>{chapter.role.title}</span>
+          ChogTales · Ch.{chapter.day} · <span style={{ color }}>{chapter.role.title}</span>
         </span>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -209,9 +209,9 @@ export function Cover({ chapter, color }: { chapter: Chapter; color: string }) {
           <div className="font-[family-name:var(--font-dela)] text-[clamp(18px,3.6vw,40px)] leading-none text-white title-stroke">
             CHOG
             <br />
-            CHRONICLES
+            TALES
           </div>
-          <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/70">Chog City Saga</div>
+          <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-white/70">The Daily Manga</div>
         </div>
         <div className="font-[family-name:var(--font-dela)] text-[clamp(14px,2.2vw,24px)] leading-tight text-white/90 [writing-mode:vertical-rl]">チョグ物語</div>
       </div>

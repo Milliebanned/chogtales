@@ -10,7 +10,7 @@ const bangers = Bangers({ subsets: ["latin"], weight: "400", variable: "--font-b
 const comic = Comic_Neue({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-comic" });
 
 export const metadata: Metadata = {
-  title: "Chog Chronicles — your Chog, your manga",
+  title: "ChogTales: The Daily Manga — your Chog, your manga",
   description:
     "Care for your Chog NFT. Feed it, spoil it, or forget it. Every day it stars in a new manga chapter shaped by your choices.",
 };

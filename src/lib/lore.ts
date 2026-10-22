@@ -1,5 +1,5 @@
 /**
- * The Chog Chronicles series bible: an original world with distinct places,
+ * The ChogTales series bible: an original world with distinct places,
  * factions and recurring characters, so every chapter happens somewhere real.
  */
 

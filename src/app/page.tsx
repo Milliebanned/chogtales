@@ -15,7 +15,7 @@ interface Session {
 }
 
 const loginMessage = (address: string, issuedAt: number) =>
-  `Chog Chronicles\n\nSign in to write your Chog's story.\nThis costs no gas.\n\nWallet: ${address.toLowerCase()}\nIssued: ${issuedAt}`;
+  `ChogTales\n\nSign in to write your Chog's story.\nThis costs no gas.\n\nWallet: ${address.toLowerCase()}\nIssued: ${issuedAt}`;
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -110,7 +110,7 @@ export default function Home() {
         <button onClick={() => setSelected(null)} className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/chogs/chog-1.svg" alt="" className="h-9 w-9 rounded-lg border border-white/20" />
-          <span className="font-[family-name:var(--font-dela)] text-lg tracking-wide">CHOG CHRONICLES</span>
+          <span className="font-[family-name:var(--font-dela)] text-lg tracking-wide">CHOGTALES</span>
         </button>
         <div className="flex items-center gap-2">
           <button

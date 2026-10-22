@@ -15,7 +15,7 @@ const sign = (payload: string) =>
   crypto.createHmac("sha256", SECRET).update(payload).digest("base64url");
 
 export function loginMessage(address: string, issuedAt: number) {
-  return `Chog Chronicles\n\nSign in to write your Chog's story.\nThis costs no gas.\n\nWallet: ${address.toLowerCase()}\nIssued: ${issuedAt}`;
+  return `ChogTales\n\nSign in to write your Chog's story.\nThis costs no gas.\n\nWallet: ${address.toLowerCase()}\nIssued: ${issuedAt}`;
 }
 
 export async function setSession(owner: string, demo: boolean) {

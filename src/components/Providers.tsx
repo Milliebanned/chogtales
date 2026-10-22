@@ -24,7 +24,7 @@ const connectors = connectorsForWallets(
         : [injectedWallet],
     },
   ],
-  { appName: "Chog Chronicles", projectId: projectId || "chog-chronicles" },
+  { appName: "ChogTales", projectId: projectId || "chogtales" },
 );
 
 const config = createConfig({

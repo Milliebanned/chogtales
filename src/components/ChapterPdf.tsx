@@ -13,10 +13,10 @@ const H = 1410;
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 function fileName(chapters: Chapter[]) {
-  if (chapters.length === 1) return `chog-chronicles-ch${chapters[0].day}-${slug(chapters[0].title)}.pdf`;
+  if (chapters.length === 1) return `chogtales-ch${chapters[0].day}-${slug(chapters[0].title)}.pdf`;
   const days = chapters.map((c) => c.day);
   const consecutive = days.every((d, i) => i === 0 || d === days[i - 1] + 1);
-  return `chog-chronicles-${slug(chapters[0].heroName)}-ch${consecutive ? `${days[0]}-${days[days.length - 1]}` : days.join("-")}.pdf`;
+  return `chogtales-${slug(chapters[0].heroName)}-ch${consecutive ? `${days[0]}-${days[days.length - 1]}` : days.join("-")}.pdf`;
 }
 
 /**
@@ -128,7 +128,7 @@ function ChapterSheets({ chapter, decision }: { chapter: Chapter; decision?: str
               ))}
             </div>
           )}
-          <p className="mt-10 text-sm uppercase tracking-[0.3em] text-black/50">Chog Chronicles · Chapter {chapter.day}</p>
+          <p className="mt-10 text-sm uppercase tracking-[0.3em] text-black/50">ChogTales: The Daily Manga · Chapter {chapter.day}</p>
         </div>
       </div>
     </>

@@ -184,7 +184,7 @@ function planPrompt(state: ChogState, cast: CastMember[], incoming: IncomingBeef
   // seasons after the first don't restart the hero's life: reword "awakening" openers
   const beat = arc.beats[beatNo].replace(/^Awakening: the hero wakes with a clean slate( and)?/i, "Opening:").replace(/^Cold open:/i, "Opening:");
   lastOffered.set(state.key, twists);
-  return `You are the head writer of a hit weekly manga, "Chog Chronicles". This is a SERIALIZED LIFE STORY: one Chog whose fate keeps changing because of its keeper's decisions. Think of arcs like: a Chog feeds the poor because a politician is hoarding food → is forced to steal from the rich to keep feeding them → becomes sheriff when theft spreads and the city needs order → falls in love → loses that love to violence → becomes an avenger. Every change of identity is CAUSED by what happened and what the keeper chose. Nothing resets.
+  return `You are the head writer of a hit daily manga, "ChogTales". This is a SERIALIZED LIFE STORY: one Chog whose fate keeps changing because of its keeper's decisions. Think of arcs like: a Chog feeds the poor because a politician is hoarding food → is forced to steal from the rich to keep feeding them → becomes sheriff when theft spreads and the city needs order → falls in love → loses that love to violence → becomes an avenger. Every change of identity is CAUSED by what happened and what the keeper chose. Nothing resets.
 
 ${bible()}
 
@@ -221,7 +221,7 @@ Return ONLY JSON:
 }
 
 function scriptPrompt(state: ChogState, cast: CastMember[], plan: Plan) {
-  return `You are the storyboard artist of the manga "Chog Chronicles". Turn this chapter plan into 8 panels.
+  return `You are the storyboard artist of the manga "ChogTales". Turn this chapter plan into 8 panels.
 
 Title: ${plan.title}
 Hero: ${state.meta.name}, today "${plan.role.title}"
