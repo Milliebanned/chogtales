@@ -151,7 +151,7 @@ export default function MangaReader({
         </AnimatePresence>
       </div>
 
-      {pdf === "busy" && <ChapterPdf chapter={chapter} decision={decision} onDone={(err) => setPdf(err ?? "idle")} />}
+      {pdf === "busy" && <ChapterPdf chapters={[chapter]} decisions={{ [chapter.day]: decision ?? undefined }} onDone={(err) => setPdf(err ?? "idle")} />}
       <div className="flex items-center justify-center gap-4 pb-2 pt-1 text-white/60">
         <button onClick={prev} disabled={sheet === 0} className="rounded-full border border-white/15 px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-30">
           ← Back

@@ -10,16 +10,30 @@ import type { Chapter } from "@/lib/types";
 const W = 1100;
 const H = 1410;
 
-const fileName = (c: Chapter) =>
-  `chog-chronicles-ch${c.day}-${c.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}.pdf`;
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+function fileName(chapters: Chapter[]) {
+  if (chapters.length === 1) return `chog-chronicles-ch${chapters[0].day}-${slug(chapters[0].title)}.pdf`;
+  const days = chapters.map((c) => c.day);
+  const consecutive = days.every((d, i) => i === 0 || d === days[i - 1] + 1);
+  return `chog-chronicles-${slug(chapters[0].heroName)}-ch${consecutive ? `${days[0]}-${days[days.length - 1]}` : days.join("-")}.pdf`;
+}
 
 /**
- * Renders a chapter off-screen exactly as the reader shows it (cover, pages
- * with every panel revealed, the ending), snapshots each sheet and saves a PDF.
+ * Renders chapters off-screen exactly as the reader shows them (cover, pages
+ * with every panel revealed, the ending), snapshots each sheet and saves them
+ * all, in order, as ONE PDF.
  */
-export default function ChapterPdf({ chapter, decision, onDone }: { chapter: Chapter; decision?: string | null; onDone: (error?: string) => void }) {
+export default function ChapterPdf({
+  chapters,
+  decisions = {},
+  onDone,
+}: {
+  chapters: Chapter[];
+  decisions?: Record<number, string | undefined>;
+  onDone: (error?: string) => void;
+}) {
   const ref = useRef<HTMLDivElement>(null);
-  const color = roleColor(chapter.role.alignment);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +57,7 @@ export default function ChapterPdf({ chapter, decision, onDone }: { chapter: Cha
           if (i > 0) pdf.addPage([W, H], "portrait");
           pdf.addImage(url, "JPEG", 0, 0, W, H);
         }
-        pdf.save(fileName(chapter));
+        pdf.save(fileName(chapters));
         onDone();
       } catch (e) {
         console.error(e);
@@ -56,19 +70,32 @@ export default function ChapterPdf({ chapter, decision, onDone }: { chapter: Cha
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sheet = "manga-page relative overflow-hidden p-[1.6%]";
   return createPortal(
     <div ref={ref} aria-hidden style={{ position: "fixed", left: -20000, top: 0, width: W, pointerEvents: "none" }}>
-      <div data-sheet className={sheet} style={{ width: W, height: H }}>
+      {chapters.map((c) => (
+        <ChapterSheets key={c.id} chapter={c} decision={decisions[c.day]} />
+      ))}
+    </div>,
+    document.body,
+  );
+}
+
+const SHEET = "manga-page relative overflow-hidden p-[1.6%]";
+
+function ChapterSheets({ chapter, decision }: { chapter: Chapter; decision?: string }) {
+  const color = roleColor(chapter.role.alignment);
+  return (
+    <>
+      <div data-sheet className={SHEET} style={{ width: W, height: H }}>
         <Cover chapter={chapter} color={color} />
       </div>
       {chapter.pages.map((page, i) => (
-        <div data-sheet key={i} className={sheet} style={{ width: W, height: H }}>
+        <div data-sheet key={i} className={SHEET} style={{ width: W, height: H }}>
           <PageGrid chapter={chapter} index={i} revealed={page.panels.length} />
           <div className="absolute bottom-[0.6%] left-0 right-0 text-center font-[family-name:var(--font-comic)] text-[12px] font-bold text-black/40">{i + 1}</div>
         </div>
       ))}
-      <div data-sheet className={sheet} style={{ width: W, height: H }}>
+      <div data-sheet className={SHEET} style={{ width: W, height: H }}>
         <div className="flex h-full w-full flex-col items-center justify-center border-4 border-[var(--ink)] bg-[var(--paper)] p-[8%] text-center text-black">
           <div className="font-[family-name:var(--font-bangers)] text-[72px] leading-none tracking-wide">TO BE CONTINUED…</div>
           {chapter.nextTime && (
@@ -104,7 +131,6 @@ export default function ChapterPdf({ chapter, decision, onDone }: { chapter: Cha
           <p className="mt-10 text-sm uppercase tracking-[0.3em] text-black/50">Chog Chronicles · Chapter {chapter.day}</p>
         </div>
       </div>
-    </div>,
-    document.body,
+    </>
   );
 }

@@ -31,6 +31,7 @@ interface PublicState {
   omen: string;
   life: Life;
   decision: Decision | null;
+  decisions: Record<number, string>;
   chapters: { id: string; day: number; title: string; role: Role; tagline: string; cover: string | null; status: string }[];
   demo: boolean;
 }
@@ -69,7 +70,12 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
   const [reaction, setReaction] = useState("");
   const [busy, setBusy] = useState(false);
   const [reading, setReading] = useState<Chapter | null>(null);
-  const [exporting, setExporting] = useState<Chapter | null>(null);
+  // PDF export: a queue of files; each file holds one or more chapters
+  const [pdfQueue, setPdfQueue] = useState<Chapter[][]>([]);
+  const [pdfTotal, setPdfTotal] = useState(0);
+  const [picker, setPicker] = useState(false);
+  const [picked, setPicked] = useState<number[]>([]);
+  const [combine, setCombine] = useState(true);
   const [rivals, setRivals] = useState<CastMember[]>([]);
   const [rival, setRival] = useState<string | null>(null);
   const [readingToday, setReadingToday] = useState(false);
@@ -244,11 +250,19 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
     act("/api/chog/beef", { kind, target: rival }, BEEFS[kind].emoji, e);
   }
 
-  async function downloadPdf(day: number) {
-    if (exporting) return;
+  /** Download chapters as one combined PDF, or one PDF per chapter. */
+  async function downloadPdfs(days: number[], together: boolean) {
+    if (pdfQueue.length || !days.length) return;
     try {
-      const r = await api<{ chapter: Chapter }>(`/api/chog/chapter?tokenId=${tokenId}&day=${day}`);
-      if (r.chapter.status === "ready") setExporting(r.chapter);
+      const chapters = (
+        await Promise.all([...days].sort((a, b) => a - b).map((d) => api<{ chapter: Chapter }>(`/api/chog/chapter?tokenId=${tokenId}&day=${d}`)))
+      )
+        .map((r) => r.chapter)
+        .filter((c) => c.status === "ready");
+      const files = together ? [chapters] : chapters.map((c) => [c]);
+      setPdfTotal(files.length);
+      setPdfQueue(files);
+      setPicker(false);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -273,6 +287,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
   if (!state) return <div className="p-20 text-center text-white/50">Waking your Chog…</div>;
 
   const todayChapter = today?.chapter && today.chapter.day === state.day ? today.chapter : null;
+  const readyChapters = state.chapters.filter((c) => c.status === "ready");
   const ready = todayChapter?.status === "ready";
   const role = todayChapter?.role ?? state.role;
   const color = roleColor(role.alignment);
@@ -549,7 +564,75 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
 
       {/* saga shelf */}
       <div className="mt-10">
-        <h3 className="mb-4 font-[family-name:var(--font-dela)] text-2xl">My Saga</h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-[family-name:var(--font-dela)] text-2xl">My Saga</h3>
+          {readyChapters.length > 0 && (
+            <button
+              onClick={() => {
+                setPicker((p) => !p);
+                setPicked(readyChapters.map((c) => c.day));
+              }}
+              disabled={pdfQueue.length > 0}
+              className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
+            >
+              {pdfQueue.length ? `Saving PDF ${pdfTotal - pdfQueue.length + 1} of ${pdfTotal}…` : "⬇ Download chapters"}
+            </button>
+          )}
+        </div>
+        {picker && (
+          <div className="glass mb-5 rounded-3xl p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-sm font-semibold">Which chapters?</div>
+              <div className="flex gap-3 text-xs text-white/60">
+                <button onClick={() => setPicked(readyChapters.map((c) => c.day))} className="hover:text-white">Select all</button>
+                <button onClick={() => setPicked([])} className="hover:text-white">Clear</button>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {readyChapters.map((c) => {
+                const on = picked.includes(c.day);
+                return (
+                  <label key={c.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm ${on ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5"}`}>
+                    <input
+                      type="checkbox"
+                      checked={on}
+                      onChange={() => setPicked((p) => (on ? p.filter((d) => d !== c.day) : [...p, c.day]))}
+                      className="accent-[var(--chog)]"
+                    />
+                    <span className="min-w-0 truncate">
+                      <b>Ch.{c.day}</b> · {c.title}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              {[
+                { v: true, t: "One PDF", d: "all chapters in a single book" },
+                { v: false, t: "Separate PDFs", d: "one file per chapter" },
+              ].map((o) => (
+                <button
+                  key={o.t}
+                  onClick={() => setCombine(o.v)}
+                  className={`rounded-xl border px-3 py-2 text-left ${combine === o.v ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5 hover:border-white/30"}`}
+                >
+                  <span className="block font-semibold">{o.t}</span>
+                  <span className="block text-xs text-white/50">{o.d}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => downloadPdfs(picked, combine || picked.length === 1)}
+              disabled={!picked.length}
+              className="mt-4 w-full rounded-2xl bg-[var(--chog)] py-3 text-sm font-semibold text-white disabled:opacity-40"
+            >
+              {picked.length ? `⬇ Download ${picked.length} chapter${picked.length === 1 ? "" : "s"}${combine || picked.length === 1 ? "" : ` as ${picked.length} PDFs`}` : "Pick at least one chapter"}
+            </button>
+            {!combine && picked.length > 1 && (
+              <p className="mt-2 text-center text-xs text-white/40">Your browser may ask once to allow multiple downloads.</p>
+            )}
+          </div>
+        )}
         {state.chapters.length === 0 ? (
           <p className="text-white/40">No chapters yet. Read today&apos;s chapter to begin your story.</p>
         ) : (
@@ -577,11 +660,11 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
               </motion.button>
               {c.status === "ready" && (
                 <button
-                  onClick={() => downloadPdf(c.day)}
-                  disabled={!!exporting}
+                  onClick={() => downloadPdfs([c.day], true)}
+                  disabled={pdfQueue.length > 0}
                   className="rounded-lg border border-white/15 py-1.5 text-xs text-white/70 hover:bg-white/10 disabled:opacity-50"
                 >
-                  {exporting?.day === c.day ? "Saving PDF…" : "⬇ Download PDF"}
+                  ⬇ Download PDF
                 </button>
               )}
               </div>
@@ -628,13 +711,14 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
         )}
         {reading && <MangaReader chapter={reading} onClose={() => setReading(null)} />}
       </AnimatePresence>
-      {exporting && (
+      {pdfQueue.length > 0 && (
         <ChapterPdf
-          chapter={exporting}
-          decision={exporting.day === state.day ? state.decision?.picked : undefined}
+          key={pdfTotal - pdfQueue.length}
+          chapters={pdfQueue[0]}
+          decisions={{ ...state.decisions, ...(state.decision ? { [state.day]: state.decision.picked } : {}) }}
           onDone={(err) => {
-            setExporting(null);
             if (err) setError(err);
+            setPdfQueue((q) => (err ? [] : q.slice(1)));
           }}
         />
       )}

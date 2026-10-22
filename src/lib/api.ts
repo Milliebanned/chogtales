@@ -82,6 +82,8 @@ export async function publicState(state: ChogState) {
     omen: omen(state),
     life: state.life,
     decision: state.decision?.day === state.day ? state.decision : null,
+    // what the keeper chose at the end of each past chapter (shown in PDFs)
+    decisions: Object.fromEntries(state.history.filter((h) => h.decision).map((h) => [h.day, h.decision!.picked])),
     chapters: await chapterList(state),
     demo: !!state.meta.demo,
   };
