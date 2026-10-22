@@ -315,7 +315,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pb-3">
         <button onClick={onBack} className="text-sm text-white/50 transition hover:text-white">← My Chogs</button>
         <div className="flex min-w-0 items-baseline gap-3">
-          <h2 className="text-grad truncate font-[family-name:var(--font-dela)] text-2xl">{state.meta.name}</h2>
+          <h2 className="truncate font-[family-name:var(--font-dela)] text-2xl text-white">{state.meta.name}</h2>
           <span className="text-xs uppercase tracking-[0.3em] text-white/40">Day {state.day}</span>
           <span className="hidden max-w-[260px] truncate rounded-full px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black sm:inline" style={{ background: color }}>
             {role.title}
@@ -436,7 +436,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
             <div className="card flex min-h-0 flex-1 flex-col overflow-hidden p-4">
               {todayChapter?.choice ? (
                 <>
-                  <div className="text-grad text-[11px] font-bold uppercase tracking-[0.25em]">Your decision · shapes the next chapter</div>
+                  <div className="text-[11px] text-white/45 font-bold uppercase tracking-[0.25em]">Your decision · shapes the next chapter</div>
                   <p className="mt-2 text-sm font-semibold text-white">{todayChapter.choice.prompt}</p>
                   <div className="mt-3 grid min-h-0 gap-2 overflow-y-auto pr-1">
                     {todayChapter.choice.options.map((o) => {
@@ -462,7 +462,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
                 <div className="grid flex-1 place-items-center text-center text-sm text-white/40">The decision appears at the end of today&apos;s chapter.</div>
               )}
               <div className="mt-3 border-t border-white/10 pt-3 text-xs text-white/55">
-                <span className="text-grad font-bold uppercase tracking-[0.2em]">Today in Chog City</span> · {state.event}
+                <span className="font-bold uppercase tracking-[0.2em] text-white/40">Today in Chog City</span> · {state.event}
               </div>
             </div>
           </div>
@@ -550,9 +550,9 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
         <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[1.3fr_1fr]">
           <LifePanel life={state.life} />
           <div className="card p-5">
-            <div className="text-grad text-[11px] font-bold uppercase tracking-[0.25em]">Today in Chog City</div>
+            <div className="text-[11px] text-white/45 font-bold uppercase tracking-[0.25em]">Today in Chog City</div>
             <p className="mt-2 text-white/85">📰 {state.event}</p>
-            <div className="text-grad mt-6 text-[11px] font-bold uppercase tracking-[0.25em]">What you notice</div>
+            <div className="mt-6 text-[11px] text-white/45 font-bold uppercase tracking-[0.25em]">What you notice</div>
             <p className="mt-2 italic text-white/75">{state.omen}</p>
           </div>
         </div>
@@ -561,7 +561,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
       {tab === "saga" && (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-grad font-[family-name:var(--font-dela)] text-2xl">My Saga</h3>
+            <h3 className="font-[family-name:var(--font-dela)] text-2xl text-white">My Saga</h3>
             {readyChapters.length > 0 && (
               <button
                 onClick={() => {

@@ -59,17 +59,27 @@ function Hero(props: { isConnected: boolean; onSign: () => void; onDemo: () => v
     { n: "1", t: "new chapter a day" },
   ];
   return (
-    <section className="relative mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:grid-cols-[1.1fr_1fr]">
-      <motion.div initial="hidden" animate="show" className="relative z-10">
+    <section className="relative min-h-[calc(100vh-76px)]">
+      {/* the 3D scene is a full-width layer behind the text, fading into the page on every side */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.6, delay: 0.2 }}
+        className="hero-3d pointer-events-none absolute inset-x-0 -top-[76px] bottom-0"
+      >
+        <Hero3D />
+      </motion.div>
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-76px)] max-w-7xl items-center px-4 sm:px-6">
+      <motion.div initial="hidden" animate="show" className="max-w-[640px] pb-[38vh] lg:pb-0">
         <motion.div variants={rise} custom={0}>
           <Eyebrow>Chogathon 2026 · Monad</Eyebrow>
         </motion.div>
         <motion.h1 variants={rise} custom={1} className="mt-6 font-[family-name:var(--font-dela)] sm:whitespace-nowrap text-[clamp(38px,4.6vw,72px)] leading-[0.98]">
-          <span className="text-grad">Your Chog.</span>
+          <span>Your Chog.</span>
           <br />
-          <span className="text-grad-cool">Your choices.</span>
+          <span>Your <span className="accent text-[1.12em]">choices.</span></span>
           <br />
-          <span className="text-grad-anim">Your manga.</span>
+          <span>Your manga.</span>
         </motion.h1>
         <motion.p variants={rise} custom={2} className="mt-6 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg">
           Your Chog NFT is the hero of a manga that is written and drawn fresh every single day. Feed it, raise it, start beef with other Chogs, and make one
@@ -82,21 +92,13 @@ function Hero(props: { isConnected: boolean; onSign: () => void; onDemo: () => v
         <motion.div variants={rise} custom={4} className="mt-10 flex flex-wrap gap-8">
           {stats.map((s) => (
             <div key={s.t}>
-              <div className="text-grad font-[family-name:var(--font-dela)] text-3xl">{s.n}</div>
+              <div className="text-white font-[family-name:var(--font-dela)] text-3xl">{s.n}</div>
               <div className="text-xs uppercase tracking-[0.2em] text-white/45">{s.t}</div>
             </div>
           ))}
         </motion.div>
       </motion.div>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, delay: 0.2 }}
-        className="relative h-[420px] w-full sm:h-[520px] lg:h-[620px]"
-      >
-        <div className="absolute inset-[10%] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35),transparent_65%)] blur-2xl" />
-        <Hero3D />
-      </motion.div>
+      </div>
       <motion.div
         className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 text-[11px] uppercase tracking-[0.4em] text-white/35 lg:block"
         animate={{ y: [0, 8, 0] }}
@@ -130,8 +132,8 @@ function HeroIsYou() {
         <motion.div variants={rise}>
           <Eyebrow>The NFT is the story</Eyebrow>
         </motion.div>
-        <motion.h2 variants={rise} custom={1} className="text-grad mt-5 font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
-          Your Chog isn&apos;t a profile picture here. It&apos;s the main character.
+        <motion.h2 variants={rise} custom={1} className="text-white mt-5 font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
+          Your Chog isn&apos;t a profile picture here. It&apos;s the main <span className="accent">character.</span>
         </motion.h2>
         <motion.p variants={rise} custom={2} className="mt-5 text-white/60">
           The artist draws <i>your</i> Chog into every panel, from its exact NFT image. Its on-chain traits decide how it reacts to everything you do, and the
@@ -260,8 +262,8 @@ function Loop() {
         <motion.div variants={rise}>
           <Eyebrow>Every day</Eyebrow>
         </motion.div>
-        <motion.h2 variants={rise} custom={1} className="text-grad mx-auto mt-5 max-w-3xl font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
-          Four moves. One life that never resets.
+        <motion.h2 variants={rise} custom={1} className="text-white mx-auto mt-5 max-w-3xl font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
+          Four moves. One life that <span className="accent">never resets.</span>
         </motion.h2>
       </motion.div>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -269,10 +271,10 @@ function Loop() {
           <motion.div key={s.n} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={rise} custom={i}>
             <TiltCard className="h-full min-h-[260px]">
               <div className="flex items-start justify-between">
-                <span className="text-grad font-[family-name:var(--font-bangers)] text-5xl">{s.n}</span>
+                <span className="font-[family-name:var(--font-bangers)] text-5xl text-white/25">{s.n}</span>
                 <span className="text-3xl">{s.icon}</span>
               </div>
-              <div className="text-grad-cool mt-8 font-[family-name:var(--font-dela)] text-2xl">{s.t}</div>
+              <div className="accent mt-8 text-3xl text-white">{s.t}</div>
               <p className="mt-3 text-sm leading-relaxed text-white/60">{s.d}</p>
             </TiltCard>
           </motion.div>
@@ -307,8 +309,8 @@ function Gallery() {
         <motion.div variants={rise}>
           <Eyebrow>Drawn by ChogTales</Eyebrow>
         </motion.div>
-        <motion.h2 variants={rise} custom={1} className="text-grad mx-auto mt-5 max-w-3xl font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
-          Real panels. Real Chogs. Nobody drew these by hand.
+        <motion.h2 variants={rise} custom={1} className="text-white mx-auto mt-5 max-w-3xl font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
+          Real panels. Real Chogs. Nobody drew these <span className="accent">by hand.</span>
         </motion.h2>
         <motion.p variants={rise} custom={2} className="mx-auto mt-5 max-w-xl text-white/60">
           Every image below came out of a real chapter, generated for real Chog Genesis NFTs during testing.
@@ -334,8 +336,8 @@ function Beef() {
           <motion.div variants={rise}>
             <Eyebrow>Multiplayer story</Eyebrow>
           </motion.div>
-          <motion.h2 variants={rise} custom={1} className="text-grad mt-5 font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
-            Start beef. Both stories feel it.
+          <motion.h2 variants={rise} custom={1} className="text-white mt-5 font-[family-name:var(--font-dela)] text-[clamp(34px,5vw,60px)] leading-[0.95]">
+            Start beef. Both stories <span className="accent">feel it.</span>
           </motion.h2>
           <motion.p variants={rise} custom={2} className="mt-5 text-white/60">
             Challenge another keeper&apos;s Chog to a duel, steal its lunch, or spread a rumor. Your rivalry becomes the main fight of your next chapter, and it
@@ -426,8 +428,8 @@ function FinalCall(props: { isConnected: boolean; onSign: () => void; onDemo: ()
     <section className="relative mx-auto max-w-5xl px-4 pb-16 pt-24 text-center sm:px-6">
       <div className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-72 max-w-3xl rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.35),transparent_65%)] blur-3xl" />
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} className="relative">
-        <motion.h2 variants={rise} className="text-grad-anim font-[family-name:var(--font-dela)] text-[clamp(40px,7vw,88px)] leading-[0.9]">
-          Chapter 1 is waiting.
+        <motion.h2 variants={rise} className="text-white font-[family-name:var(--font-dela)] text-[clamp(40px,7vw,88px)] leading-[0.9]">
+          Chapter 1 is <span className="accent">waiting.</span>
         </motion.h2>
         <motion.p variants={rise} custom={1} className="mx-auto mt-6 max-w-xl text-lg text-white/60">
           Connect a wallet with a Chog Genesis NFT, or try it right now with three real Chogs in demo mode.
@@ -443,7 +445,7 @@ function FinalCall(props: { isConnected: boolean; onSign: () => void; onDemo: ()
       </motion.div>
       <footer className="relative mt-24 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/40">
         <span>
-          <span className="text-grad font-bold">ChogTales</span> · The Daily Manga · built for Chogathon 2026
+          <span className="font-bold text-white/80">ChogTales</span> · The Daily Manga · built for Chogathon 2026
         </span>
         <span className="flex gap-5">
           <a href={REPO} target="_blank" rel="noopener noreferrer" className="hover:text-white">GitHub</a>

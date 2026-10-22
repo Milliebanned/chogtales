@@ -1,12 +1,18 @@
 "use client";
 
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { Suspense, useMemo, useRef } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 const W = 2;
 const H = 2.8;
 const COVER_T = 0.06;
+
+/**
+ * The canvas sits BEHIND the hero text, so it can't receive mouse events itself.
+ * Track the mouse on the whole window instead (-1..1 on both axes).
+ */
+const mouse = { x: 0, y: 0 };
 
 const PANELS = ["/showcase/p13.webp", "/showcase/p16.webp", "/showcase/p2.webp", "/showcase/p9.webp", "/showcase/p5.webp", "/showcase/p14.webp"];
 
@@ -79,8 +85,17 @@ function useCoverTexture(img: HTMLImageElement) {
 }
 
 function Book() {
-  const [chog, inside, page] = useLoader(THREE.TextureLoader, ["/hero/chog-2.webp", "/showcase/p0.webp", "/showcase/p11.webp"]);
-  [inside, page].forEach((t) => (t.colorSpace = THREE.SRGBColorSpace));
+  const [chog, inside, page, ...leafArt] = useLoader(THREE.TextureLoader, [
+    "/hero/chog-2.webp",
+    "/showcase/p0.webp",
+    "/showcase/p11.webp",
+    "/showcase/p6.webp",
+    "/showcase/p10.webp",
+    "/showcase/p3.webp",
+    "/showcase/p8.webp",
+    "/showcase/p12.webp",
+  ]);
+  [inside, page, ...leafArt].forEach((t) => (t.colorSpace = THREE.SRGBColorSpace));
   const cover = useCoverTexture(chog.image as HTMLImageElement);
   const group = useRef<THREE.Group>(null);
   const front = useRef<THREE.Group>(null);
@@ -94,18 +109,22 @@ function Book() {
     const edge = new THREE.MeshStandardMaterial({ color: "#4c1d95", roughness: 0.6 });
     return [edge, edge, edge, edge, new THREE.MeshStandardMaterial({ map: page, roughness: 0.8 }), edge];
   }, [page]);
-  const paper = useMemo(() => new THREE.MeshStandardMaterial({ color: "#f6f1e7", roughness: 0.9, side: THREE.DoubleSide }), []);
+  const paper = useMemo(() => new THREE.MeshStandardMaterial({ color: "#f6f1e7", roughness: 0.9 }), []);
+  // the page block's top face is a drawn page, so the open book shows manga on the right too
+  const blockMats = useMemo(() => [paper, paper, paper, paper, new THREE.MeshStandardMaterial({ map: page, roughness: 0.85 }), paper], [paper, page]);
+  // each loose leaf: plain paper on the front, a drawn panel on the back (the side you see once it flips open)
+  const leafMats = useMemo(() => leafArt.map((t) => new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 })), [leafArt]);
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     const g = group.current!;
     // follow the mouse a little, float, and breathe the book open and closed
-    g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, -0.45 + state.pointer.x * 0.45, 0.05);
-    g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, 0.12 - state.pointer.y * 0.25, 0.05);
+    g.rotation.y = THREE.MathUtils.lerp(g.rotation.y, -0.45 + mouse.x * 0.45, 0.05);
+    g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, 0.12 - mouse.y * 0.25, 0.05);
     g.position.y = Math.sin(t * 0.9) * 0.12;
     const open = THREE.MathUtils.smoothstep(Math.sin(t * 0.55) * 0.5 + 0.5, 0.15, 0.85);
     front.current!.rotation.y = -open * 2.5;
-    leaves.current.forEach((l, i) => l && (l.rotation.y = -open * (2.35 - i * 0.32)));
+    leaves.current.forEach((l, i) => l && (l.rotation.y = -open * (2.4 - i * 0.2)));
   });
 
   return (
@@ -115,13 +134,16 @@ function Book() {
         <boxGeometry args={[W, H, COVER_T]} />
       </mesh>
       {/* page block */}
-      <mesh position={[0.02, 0, -0.07]} material={paper}>
+      <mesh position={[0.02, 0, -0.07]} material={blockMats}>
         <boxGeometry args={[W * 0.96, H * 0.96, 0.1]} />
       </mesh>
       {/* loose leaves that fan open with the cover */}
-      {[0, 1, 2].map((i) => (
-        <group key={i} ref={(el) => void (leaves.current[i] = el)} position={[-W / 2, 0, -0.01 + i * 0.012]}>
-          <mesh position={[W * 0.48, 0, 0]} material={paper}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <group key={i} ref={(el) => void (leaves.current[i] = el)} position={[-W / 2, 0, -0.012 + i * 0.008]}>
+          <mesh position={[W * 0.48, 0, 0.001]} material={paper}>
+            <planeGeometry args={[W * 0.95, H * 0.95]} />
+          </mesh>
+          <mesh position={[W * 0.48, 0, -0.001]} rotation={[0, Math.PI, 0]} material={leafMats[i]}>
             <planeGeometry args={[W * 0.95, H * 0.95]} />
           </mesh>
         </group>
@@ -145,7 +167,7 @@ function OrbitingPanels() {
     ring.current!.rotation.y += dt * 0.12;
     ring.current!.children.forEach((c, i) => {
       c.lookAt(state.camera.position);
-      c.position.y = Math.sin(state.clock.elapsedTime * 0.8 + i) * 0.35 + (i % 2 ? 0.9 : -0.9);
+      c.position.y = Math.sin(state.clock.elapsedTime * 0.8 + i) * 0.3 + (i % 2 ? 1 : -1);
     });
   });
   return (
@@ -153,7 +175,7 @@ function OrbitingPanels() {
       {textures.map((tex, i) => {
         const a = (i / textures.length) * Math.PI * 2;
         return (
-          <group key={i} position={[Math.cos(a) * 3.3, 0, Math.sin(a) * 3.3]}>
+          <group key={i} position={[Math.cos(a) * 2.55, 0, Math.sin(a) * 2.55]} scale={0.8}>
             <mesh position={[0, 0, -0.01]}>
               <planeGeometry args={[1.5, 1.05]} />
               <meshBasicMaterial color="#ffffff" />
@@ -200,17 +222,45 @@ function Ink() {
   );
 }
 
-export default function Hero3D() {
+/** Put the book on the right half on wide screens, behind and below the text on phones. */
+function Stage({ children }: { children: React.ReactNode }) {
+  const { viewport } = useThree();
+  const wide = viewport.aspect > 1.1;
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    const g = ref.current!;
+    // a little parallax for the whole scene
+    g.position.x = THREE.MathUtils.lerp(g.position.x, (wide ? viewport.width * 0.25 : 0) + mouse.x * 0.25, 0.05);
+    g.position.y = THREE.MathUtils.lerp(g.position.y, (wide ? 0 : -viewport.height * 0.18) - mouse.y * 0.15, 0.05);
+  });
   return (
-    <Canvas camera={{ position: [0, 0.3, 8], fov: 38 }} dpr={[1, 2]} gl={{ alpha: true, antialias: true }} style={{ background: "transparent" }}>
+    <group ref={ref} scale={wide ? 1 : 0.72}>
+      {children}
+    </group>
+  );
+}
+
+export default function Hero3D() {
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -((e.clientY / window.innerHeight) * 2 - 1);
+    };
+    window.addEventListener("pointermove", onMove);
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+  return (
+    <Canvas camera={{ position: [0, 0.3, 8], fov: 38 }} dpr={[1, 2]} gl={{ alpha: true, antialias: true }} style={{ background: "transparent", pointerEvents: "none" }}>
       <ambientLight intensity={0.7} />
       <directionalLight position={[3, 5, 6]} intensity={1.6} />
       <pointLight position={[-4, 2, 3]} intensity={30} color="#a855f7" />
-      <pointLight position={[4, -2, 3]} intensity={25} color="#ec4899" />
-      <Suspense fallback={null}>
-        <Book />
-        <OrbitingPanels />
-      </Suspense>
+      <pointLight position={[4, -2, 3]} intensity={12} color="#ec4899" />
+      <Stage>
+        <Suspense fallback={null}>
+          <Book />
+          <OrbitingPanels />
+        </Suspense>
+      </Stage>
       <Ink />
     </Canvas>
   );
