@@ -1,9 +1,9 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import ConnectWallet from "./ConnectWallet";
 import { OPENSEA_URL, OpenSeaLogo } from "./OpenSeaLogo";
 import showcase from "@/lib/showcase.json";
 
@@ -29,13 +29,7 @@ function CTAs({ isConnected, onSign, onDemo, loading, center }: { isConnected: b
   return (
     <div className={`flex flex-wrap items-center gap-3 ${center ? "justify-center" : ""}`}>
       {!isConnected ? (
-        <ConnectButton.Custom>
-          {({ openConnectModal, mounted }) => (
-            <button onClick={openConnectModal} disabled={!mounted} className="btn-primary px-7 py-3.5 text-base">
-              Connect wallet
-            </button>
-          )}
-        </ConnectButton.Custom>
+        <ConnectWallet />
       ) : (
         <button onClick={onSign} disabled={loading} className="btn-primary px-7 py-3.5 text-base">
           {loading ? "Check your wallet…" : "Sign in · free, no gas"}

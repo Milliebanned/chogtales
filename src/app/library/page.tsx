@@ -1,6 +1,5 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { erc20Abi, parseUnits } from "viem";
@@ -8,6 +7,7 @@ import { useAccount, useChainId, useConfig, useSignMessage, useSwitchChain, useW
 import { waitForTransactionReceipt } from "wagmi/actions";
 import MangaReader from "@/components/MangaReader";
 import SiteNav from "@/components/SiteNav";
+import ConnectWallet from "@/components/ConnectWallet";
 import { OPENSEA_URL } from "@/components/OpenSeaLogo";
 import { roleColor } from "@/lib/roleStyle";
 import type { Chapter, Role } from "@/lib/types";
@@ -178,7 +178,7 @@ export default function Library() {
           { label: "Make your own", href: "/" },
           { label: "Read docs", href: "/docs" },
         ]}
-        action={<ConnectButton label="Connect" chainStatus="none" showBalance={false} accountStatus={{ smallScreen: "avatar", largeScreen: "address" }} />}
+        action={<ConnectWallet compact className="btn-primary px-4 py-2 text-xs" />}
       />
 
       <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
@@ -323,13 +323,7 @@ export default function Library() {
                       {busy ? "Working…" : `Unlock · ${priceLabel(open.item.price)}`}
                     </button>
                   ) : (
-                    <ConnectButton.Custom>
-                      {({ openConnectModal }) => (
-                        <button onClick={openConnectModal} className="btn-primary py-3 text-sm">
-                          Connect wallet to unlock
-                        </button>
-                      )}
-                    </ConnectButton.Custom>
+                    <ConnectWallet label="Connect wallet to unlock" className="btn-primary py-3 text-sm" />
                   )}
                 </div>
                 {status && <p className="mt-3 text-center text-xs text-white/70">{status}</p>}
