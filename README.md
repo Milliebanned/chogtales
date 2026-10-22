@@ -4,7 +4,7 @@
 
 Built for [Chogathon 2026](https://chogathon.chog.xyz).
 
-> **Live demo:** https://chogtales.milliebanned.xyz · **Library:** https://chogtales.milliebanned.xyz/library · **Docs:** https://chogtales.milliebanned.xyz/docs ([PDF](https://chogtales.milliebanned.xyz/chogtales-docs.pdf)) · **Demo video:** _coming soon_
+> **Live demo:** https://chogtales.milliebanned.xyz · **Library:** https://chogtales.milliebanned.xyz/library · **Docs:** https://chogtales.milliebanned.xyz/docs ([PDF](https://chogtales.milliebanned.xyz/chogtales-docs.pdf)) · **Demo video:** [watch (2:16)](https://chogtales.milliebanned.xyz/demo/chogtales-demo.mp4)
 
 ---
 
@@ -53,7 +53,7 @@ Take the NFT away and there is no story. The Chog is what each part runs on:
 2. Pick one of the three demo Chogs. These are real Chog Genesis NFTs read from mainnet.
 3. Wait for chapter 1 to be written and drawn. Read it and make the decision.
 4. Feed it 3 times, do 3 care actions, and optionally start beef with another Chog.
-5. Press **⏭ Skip to tomorrow (demo)** to jump a day. The next chapter picks up from your decision and shows the consequences of what you did.
+5. Press **Next day →** (top right, demo mode only) to jump a day. The next chapter picks up from your decision and shows the consequences of what you did.
 6. In **My Saga**, use **⬇ Download chapters** to save one or several chapters as a PDF.
 
 To see beef cross between stories: with Chog A, start beef with Chog B. Skip a day on A, then open B. Both chapters feature the rivalry.

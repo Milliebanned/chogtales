@@ -145,6 +145,31 @@ function Hero(props: { isConnected: boolean; onSign: () => void; onDemo: () => v
   );
 }
 
+/** The 2-minute product demo, right after the hero. */
+function DemoVideo() {
+  return (
+    <section id="demo" className="relative mx-auto max-w-6xl scroll-mt-20 px-4 pt-16 sm:px-6">
+      <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} className="text-center">
+        <motion.div variants={rise}>
+          <Eyebrow>Watch the demo</Eyebrow>
+        </motion.div>
+        <motion.h2 variants={rise} custom={1} className="mx-auto mt-5 max-w-3xl font-[family-name:var(--font-dela)] text-[clamp(30px,4.4vw,54px)] leading-[0.98] text-white">
+          ChogTales in <span className="accent">two minutes.</span>
+        </motion.h2>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+        className="mt-10 overflow-hidden rounded-2xl border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_80px_rgba(124,58,237,0.25)]"
+      >
+        <video src="/demo/chogtales-demo.mp4" poster="/demo/poster.jpg" controls playsInline preload="metadata" className="block aspect-video w-full bg-black" />
+      </motion.div>
+    </section>
+  );
+}
+
 /* ---------------------------------------------------------------- */
 /* 2 · your Chog is the hero                                         */
 /* ---------------------------------------------------------------- */
@@ -505,6 +530,7 @@ export default function Landing(props: { isConnected: boolean; onSign: () => voi
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative overflow-x-hidden">
       <Hero {...props} />
+      <DemoVideo />
       <HeroIsYou />
       <Loop />
       <Gallery />
