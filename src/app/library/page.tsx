@@ -2,12 +2,12 @@
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { erc20Abi, parseUnits } from "viem";
 import { useAccount, useChainId, useConfig, useSignMessage, useSwitchChain, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import MangaReader from "@/components/MangaReader";
+import SiteNav from "@/components/SiteNav";
 import { OPENSEA_URL } from "@/components/OpenSeaLogo";
 import { roleColor } from "@/lib/roleStyle";
 import type { Chapter, Role } from "@/lib/types";
@@ -172,22 +172,14 @@ export default function Library() {
 
   return (
     <main className="min-h-screen">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/chogs/chog-1.svg" alt="" className="h-9 w-9 rounded-lg border border-white/20" />
-          <span className="font-[family-name:var(--font-dela)] text-lg tracking-wide">CHOGTALES</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/" className="rounded-full px-3 py-1.5 text-xs uppercase tracking-widest text-white/60 hover:text-white">
-            Make your own
-          </Link>
-          <Link href="/docs" className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/80 hover:bg-white/10">
-            Read docs
-          </Link>
-          <ConnectButton chainStatus="none" showBalance={false} accountStatus="address" />
-        </div>
-      </nav>
+      <SiteNav
+        tag="Library"
+        links={[
+          { label: "Make your own", href: "/" },
+          { label: "Read docs", href: "/docs" },
+        ]}
+        action={<ConnectButton label="Connect" chainStatus="none" showBalance={false} accountStatus={{ smallScreen: "avatar", largeScreen: "address" }} />}
+      />
 
       <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-3xl pt-6">

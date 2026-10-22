@@ -226,15 +226,25 @@ function Ink() {
 function Stage({ children }: { children: React.ReactNode }) {
   const { viewport } = useThree();
   const wide = viewport.aspect > 1.1;
+  // keep the open book (about 4.4 units across with its orbit) inside the right half
+  const scale = wide ? Math.min(1, (viewport.width * 0.42) / 4.4) : 0.82;
+  const homeX = wide ? viewport.width * 0.27 : 0;
   const ref = useRef<THREE.Group>(null);
+  const placed = useRef(false);
   useFrame(() => {
     const g = ref.current!;
+    if (!placed.current) {
+      // start in place, so the book never sweeps across the headline on load
+      g.position.set(homeX, 0, 0);
+      placed.current = true;
+    }
     // a little parallax for the whole scene
-    g.position.x = THREE.MathUtils.lerp(g.position.x, (wide ? viewport.width * 0.25 : 0) + mouse.x * 0.25, 0.05);
-    g.position.y = THREE.MathUtils.lerp(g.position.y, (wide ? 0 : -viewport.height * 0.18) - mouse.y * 0.15, 0.05);
+    g.position.x = THREE.MathUtils.lerp(g.position.x, homeX + mouse.x * 0.25, 0.05);
+    g.position.y = THREE.MathUtils.lerp(g.position.y, -mouse.y * 0.15, 0.05);
+    g.scale.setScalar(THREE.MathUtils.lerp(g.scale.x, scale, 0.1));
   });
   return (
-    <group ref={ref} scale={wide ? 1 : 0.72}>
+    <group ref={ref} position={[homeX, 0, 0]} scale={scale}>
       {children}
     </group>
   );

@@ -351,9 +351,9 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
               onClick={nextDay}
               disabled={busy || phase === "writing"}
               title="Demo mode: jump to the next day"
-              className="rounded-full border border-amber-300/40 bg-amber-300/10 px-4 py-2 text-xs font-semibold text-amber-100 transition hover:bg-amber-300/20 disabled:opacity-40"
+              className="whitespace-nowrap rounded-full border border-amber-300/40 bg-amber-300/10 px-4 py-2 text-xs font-semibold text-amber-100 transition hover:bg-amber-300/20 disabled:opacity-40"
             >
-              ⏭ Next day
+              Next day →
             </button>
           )}
         </div>
@@ -557,7 +557,7 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
                     ? "That's enough fussing for today."
                     : actTab === "beef" && !rival && !state.beef
                       ? "Pick a rival first."
-                      : "Hover a tile to see what it is.")}
+                      : "Hover a tile to see what it does. On a phone, a tap uses it right away.")}
             </div>
           </div>
         </div>

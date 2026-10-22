@@ -3,7 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OPENSEA_URL, OpenSeaLogo } from "./OpenSeaLogo";
 import showcase from "@/lib/showcase.json";
 
@@ -54,7 +54,7 @@ function LibraryCTA() {
   return (
     <a
       href="/library"
-      className="group mt-5 flex max-w-[520px] items-center gap-4 rounded-2xl border border-violet-400/40 bg-violet-500/[0.12] p-3 pr-5 shadow-[0_10px_40px_-15px_rgba(124,58,237,0.9)] transition hover:border-violet-300 hover:bg-violet-500/20"
+      className="group relative mt-5 flex max-w-[520px] items-center gap-4 overflow-hidden rounded-2xl border border-violet-300/50 bg-[#150c26]/85 p-3 pr-5 shadow-[0_10px_40px_-15px_rgba(124,58,237,0.9),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl transition hover:border-violet-200/80 hover:bg-[#1c1033]/90"
     >
       <span className="flex shrink-0 -space-x-5">
         {covers.map((c, i) => (
@@ -73,9 +73,9 @@ function LibraryCTA() {
           Manga Library
           <span className="rounded-full bg-violet-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>
         </span>
-        <span className="mt-0.5 block text-sm text-white/65">Read other keepers&apos; manga, or buy one with $CHOG</span>
+        <span className="mt-0.5 block text-sm text-white/90">Read other keepers&apos; manga, or buy one with $CHOG</span>
       </span>
-      <span className="ml-auto text-xl text-violet-200 transition group-hover:translate-x-1">→</span>
+      <span className="ml-auto text-xl text-white transition group-hover:translate-x-1">→</span>
     </a>
   );
 }
@@ -91,18 +91,18 @@ function Hero(props: { isConnected: boolean; onSign: () => void; onDemo: () => v
     { n: "1", t: "new chapter a day" },
   ];
   return (
-    <section className="relative min-h-[calc(100vh-76px)]">
+    <section className="relative flex flex-col lg:block lg:min-h-[calc(100vh-76px)]">
       {/* the 3D scene is a full-width layer behind the text, fading into the page on every side */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.6, delay: 0.2 }}
-        className="hero-3d pointer-events-none absolute inset-x-0 -top-[76px] bottom-0"
+        className="hero-3d pointer-events-none relative order-2 h-[420px] w-full lg:absolute lg:inset-x-0 lg:-top-[76px] lg:bottom-0 lg:h-auto"
       >
         <Hero3D />
       </motion.div>
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-76px)] max-w-7xl items-center px-4 sm:px-6">
-      <motion.div initial="hidden" animate="show" className="max-w-[640px] pb-[38vh] lg:pb-0">
+      <div className="relative z-10 order-1 mx-auto flex w-full max-w-7xl items-center px-4 pt-4 sm:px-6 lg:min-h-[calc(100vh-76px)] lg:pt-0">
+      <motion.div initial="hidden" animate="show" className="max-w-[640px]">
         <motion.div variants={rise} custom={0}>
           <Eyebrow>Chogathon 2026 · Monad</Eyebrow>
         </motion.div>
@@ -159,8 +159,16 @@ const TRAITS = [
 function HeroIsYou() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const rotate = useTransform(scrollYProgress, [0, 0.5, 1], [-14, 0, 10]);
-  const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const on = () => setWide(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const rotate = useTransform(scrollYProgress, [0, 0.5, 1], wide ? [-14, 0, 10] : [-4, -4, -4]);
+  const y = useTransform(scrollYProgress, [0, 1], wide ? [80, -80] : [0, 0]);
   return (
     <section ref={ref} className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6">
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} className="max-w-2xl">
@@ -177,7 +185,7 @@ function HeroIsYou() {
       </motion.div>
 
       <div className="mt-14 grid items-center gap-10 lg:grid-cols-[320px_1fr_380px]">
-        <motion.div style={{ rotate, y }} className="relative mx-auto w-[280px]">
+        <motion.div style={{ rotate, y }} className="relative mx-auto w-[240px] sm:w-[280px]">
           <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-violet-500/50 via-fuchsia-500/40 to-amber-400/40 blur-2xl" />
           <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-black p-2 shadow-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}

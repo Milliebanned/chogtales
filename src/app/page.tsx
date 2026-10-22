@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import Dashboard from "@/components/Dashboard";
 import Landing from "@/components/Landing";
+import SiteNav from "@/components/SiteNav";
 import { OPENSEA_URL, OpenSeaLogo } from "@/components/OpenSeaLogo";
 import { setSoundEnabled, soundEnabled } from "@/lib/sound";
 import type { ChogMeta } from "@/lib/types";
@@ -49,7 +50,10 @@ export default function Home() {
     }
     setChogs(j.chogs);
     setEnumerable(j.enumerable);
-    if (j.chogs.length === 1) setSelected(j.chogs[0].tokenId);
+    // ?chog=<tokenId> opens that Chog's dashboard directly (shareable, and handy on phones)
+    const wanted = new URLSearchParams(window.location.search).get("chog");
+    if (wanted && j.chogs.some((c: ChogMeta) => c.tokenId === wanted)) setSelected(wanted);
+    else if (j.chogs.length === 1) setSelected(j.chogs[0].tokenId);
   }, []);
 
   useEffect(() => {
@@ -105,36 +109,31 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      {/* nav */}
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-        <button onClick={() => setSelected(null)} className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/chogs/chog-1.svg" alt="" className="h-9 w-9 rounded-lg border border-white/20" />
-          <span className="font-[family-name:var(--font-dela)] text-lg tracking-wide">CHOGTALES</span>
-        </button>
-        <div className="flex items-center gap-2">
-          <a href="/library" className="rounded-full border border-violet-400/50 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-100 hover:bg-violet-500/30">
-            Manga Library
-          </a>
-          <a href="/docs" className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/80 hover:bg-white/10">
-            Read docs
-          </a>
-          <button
-            onClick={() => {
+      <SiteNav
+        onLogo={() => setSelected(null)}
+        action={<LibraryPill />}
+        links={[
+          { label: "Read docs", href: "/docs" },
+          {
+            label: `SFX ${sound ? "on" : "off"}`,
+            onClick: () => {
               setSoundEnabled(!sound);
               setSound(!sound);
-            }}
-            className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/60 hover:bg-white/10"
-          >
-            SFX {sound ? "on" : "off"}
-          </button>
-          {session && (
-            <button onClick={() => { logout(); if (!session.demo) disconnect(); }} className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/60 hover:bg-white/10">
-              {session.demo ? "Exit demo" : "Sign out"}
-            </button>
-          )}
-        </div>
-      </nav>
+            },
+          },
+          ...(session
+            ? [
+                {
+                  label: session.demo ? "Exit demo" : "Sign out",
+                  onClick: () => {
+                    logout();
+                    if (!session.demo) disconnect();
+                  },
+                },
+              ]
+            : []),
+        ]}
+      />
 
       <AnimatePresence mode="wait">
         {session === undefined ? null : !session ? (
@@ -213,5 +212,18 @@ export default function Home() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+/** Always-visible way into the Manga Library, on every screen size. */
+function LibraryPill() {
+  return (
+    <a
+      href="/library"
+      className="rounded-full border border-violet-400/50 bg-violet-500/15 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-violet-100 transition hover:bg-violet-500/30"
+    >
+      <span className="sm:hidden">Library</span>
+      <span className="hidden sm:inline">Manga Library</span>
+    </a>
   );
 }

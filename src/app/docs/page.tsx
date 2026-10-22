@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./docs.css";
+import SiteNav from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "ChogTales Docs — The Daily Manga",
@@ -45,22 +46,18 @@ function Bubble({ who, children }: { who: string; children: React.ReactNode }) {
 export default function Docs() {
   return (
     <main className="docs">
-      <nav className="docs-nav">
-        <Link href="/" className="docs-brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/chogs/chog-1.svg" alt="" />
-          CHOGTALES <span>Docs</span>
-        </Link>
-        <div>
-          <Link href="/library">Manga Library</Link>
-          <a href="/chogtales-docs.pdf" download className="docs-pdf">
-            ⬇ PDF
-          </a>
-          <Link href="/" className="docs-cta">
+      <SiteNav
+        tag="Docs"
+        links={[
+          { label: "Manga Library", href: "/library", primary: true },
+          { label: "Download PDF", href: "/chogtales-docs.pdf", download: true },
+        ]}
+        action={
+          <Link href="/" className="btn-primary px-4 py-2 text-xs">
             Open the app
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       {/* cover */}
       <section className="doc-page doc-cover">
