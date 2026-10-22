@@ -14,8 +14,38 @@ interface KV {
   smembers(key: string): Promise<string[]>;
 }
 
-const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+/**
+ * Find the Redis connection however the host named it: UPSTASH_REDIS_REST_*,
+ * KV_REST_API_*, the same with a custom prefix (Vercel lets you add one, e.g.
+ * STORAGE_KV_REST_API_URL), or only a redis:// URL (REDIS_URL / KV_URL).
+ */
+function findRedis(): { url?: string; token?: string; via?: string } {
+  const env = process.env;
+  for (const [u, t] of [
+    ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    ["KV_REST_API_URL", "KV_REST_API_TOKEN"],
+  ]) {
+    const key = Object.keys(env).find((k) => k === u || k.endsWith(`_${u}`));
+    const tok = key && env[key.slice(0, key.length - u.length) + t];
+    if (key && env[key] && tok) return { url: env[key], token: tok, via: key };
+  }
+  // rediss://default:<token>@<host>:6379 → REST endpoint https://<host> with the same token
+  const urlKey = Object.keys(env).find((k) => /(^|_)(REDIS_URL|KV_URL)$/.test(k) && /^rediss?:\/\//.test(env[k] ?? ""));
+  if (urlKey) {
+    const m = env[urlKey]!.match(/^rediss?:\/\/[^:]*:([^@]+)@([^:/]+)/);
+    if (m && /upstash\.io$/.test(m[2])) return { url: `https://${m[2]}`, token: decodeURIComponent(m[1]), via: urlKey };
+  }
+  return {};
+}
+
+const redis = findRedis();
+const url = redis.url;
+const token = redis.token;
+/** Which env var the storage came from, and the NAMES of storage-looking vars present (never values). */
+export const storeInfo = {
+  via: redis.via ?? null,
+  candidates: Object.keys(process.env).filter((k) => /REDIS|KV_|UPSTASH/.test(k)),
+};
 
 function redisKV(): KV {
   const r = new Redis({ url: url!, token: token! });
