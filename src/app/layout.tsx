@@ -11,9 +11,22 @@ const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["nor
 const comic = Comic_Neue({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-comic" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://chogtales.milliebanned.xyz"),
   title: "ChogTales: The Daily Manga — your Chog, your manga",
-  description:
-    "Care for your Chog NFT. Feed it, spoil it, or forget it. Every day it stars in a new manga chapter shaped by your choices.",
+  description: "Your Chog NFT stars in a manga that is written and drawn fresh every day. Feed it, raise it, start beef, and choose who it becomes.",
+  applicationName: "ChogTales",
+  openGraph: {
+    title: "ChogTales: The Daily Manga",
+    description: "Your Chog NFT stars in a manga that is written and drawn fresh every day.",
+    url: "/",
+    siteName: "ChogTales",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ChogTales: The Daily Manga",
+    description: "Your Chog NFT stars in a manga that is written and drawn fresh every day.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
