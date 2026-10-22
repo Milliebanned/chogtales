@@ -79,6 +79,9 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
   const [rivals, setRivals] = useState<CastMember[]>([]);
   const [rival, setRival] = useState<string | null>(null);
   const [readingToday, setReadingToday] = useState(false);
+  const [tab, setTab] = useState<"today" | "life" | "saga">("today");
+  const [actTab, setActTab] = useState<"feed" | "care" | "beef">("feed");
+  const [hint, setHint] = useState("");
   const [today, setToday] = useState<ChapterResponse | null>(null);
   const [phase, setPhase] = useState<"idle" | "writing" | "inking" | "resting">("idle");
   const [line, setLine] = useState(0);
@@ -293,387 +296,379 @@ export default function Dashboard({ tokenId, onBack }: { tokenId: string; onBack
   const color = roleColor(role.alignment);
   const moodFace = state.hunger > 75 ? "😾" : state.mood > 75 ? "😸" : state.mood < 30 ? "😿" : "🙂";
 
+  const steps = [
+    { t: "Read", done: ready },
+    { t: "Decide", done: !!state.decision },
+    { t: `Meals ${3 - state.mealsLeft}/3`, done: state.mealsLeft === 0 },
+    { t: `Care ${3 - state.caresLeft}/3`, done: state.caresLeft === 0 },
+    { t: state.beef ? "Beef started" : "Beef (optional)", done: !!state.beef },
+  ];
+  const actTabs = [
+    { id: "feed" as const, label: "Feed", emoji: "🍙", left: state.mealsLeft, max: 3 },
+    { id: "care" as const, label: "Care", emoji: "🛁", left: state.caresLeft, max: 3 },
+    { id: "beef" as const, label: "Beef", emoji: "🔥", left: state.beef ? 0 : 1, max: 1 },
+  ];
+
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 sm:px-6">
-      <div className="mb-5 flex items-center justify-between">
-        <button onClick={onBack} className="text-sm text-white/50 hover:text-white">← My Chogs</button>
-        {state.demo && <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs text-amber-200">Demo mode</span>}
-      </div>
-
-      {/* the daily loop, always visible */}
-      <div className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { n: 1, t: "Read today's chapter", d: "See what happened", done: ready },
-          { n: 2, t: "Make your decision", d: "At the end of the chapter", done: !!state.decision },
-          { n: 3, t: "Feed & care", d: `${state.mealsLeft} meal${state.mealsLeft === 1 ? "" : "s"}, ${state.caresLeft} care left today`, done: state.mealsLeft === 0 && state.caresLeft === 0 },
-          { n: 4, t: state.demo ? "Skip to tomorrow" : "Come back tomorrow", d: "The next chapter is drawn from your choices", done: false },
-        ].map((s) => (
-          <div key={s.n} className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${s.done ? "border-emerald-400/30 bg-emerald-400/5" : "border-white/10 bg-white/[0.03]"}`}>
-            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${s.done ? "bg-emerald-400 text-black" : "bg-white/10 text-white/70"}`}>
-              {s.done ? "✓" : s.n}
-            </span>
-            <span>
-              <span className="block text-sm font-semibold">{s.t}</span>
-              <span className="block text-xs text-white/45">{s.d}</span>
-            </span>
+    <div className="mx-auto flex max-w-[1400px] flex-col px-4 pb-6 sm:px-6 lg:h-[calc(100vh-76px)]">
+      {/* header: who, which day, where to go */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pb-3">
+        <button onClick={onBack} className="text-sm text-white/50 transition hover:text-white">← My Chogs</button>
+        <div className="flex min-w-0 items-baseline gap-3">
+          <h2 className="text-grad truncate font-[family-name:var(--font-dela)] text-2xl">{state.meta.name}</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-white/40">Day {state.day}</span>
+          <span className="hidden max-w-[260px] truncate rounded-full px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black sm:inline" style={{ background: color }}>
+            {role.title}
+          </span>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="seg">
+            {(["today", "life", "saga"] as const).map((t) => (
+              <button key={t} onClick={() => setTab(t)} data-on={tab === t}>
+                {t === "today" ? "Today" : t === "life" ? "Life story" : `My Saga · ${state.chapters.length}`}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-        {/* ---------------- the Chog ---------------- */}
-        <div className="glass relative overflow-hidden rounded-3xl p-5">
-          <motion.div
-            className="absolute inset-0"
-            animate={{ background: `radial-gradient(520px 320px at 50% 30%, ${state.aura}40, transparent 70%)` }}
-            transition={{ duration: 1.2 }}
-          />
-          <div className="relative flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-xs uppercase tracking-[0.3em] text-white/40">Day {state.day}</div>
-              <h2 className="truncate font-[family-name:var(--font-dela)] text-3xl">{state.meta.name}</h2>
-            </div>
-            <span className="max-w-[55%] truncate rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-black" style={{ background: color }}>
-              {role.title}
-            </span>
-          </div>
-
-          <div ref={artRef} className="relative mx-auto mt-5 aspect-square w-full max-w-[400px]">
-            <motion.div
-              className="absolute -inset-3 rounded-[28px] blur-2xl"
-              animate={{ background: state.aura, opacity: [0.35, 0.6, 0.35] }}
-              transition={{ opacity: { duration: 3, repeat: Infinity } }}
-            />
-            <motion.div
-              key={bump}
-              className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15"
-              animate={{ y: [0, -8, 0], scale: bump ? [1, 1.06, 0.97, 1] : 1 }}
-              transition={{ y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" }, scale: { duration: 0.5 } }}
+          {state.demo && (
+            <button
+              onClick={nextDay}
+              disabled={busy || phase === "writing"}
+              title="Demo mode: jump to the next day"
+              className="rounded-full border border-amber-300/40 bg-amber-300/10 px-4 py-2 text-xs font-semibold text-amber-100 transition hover:bg-amber-300/20 disabled:opacity-40"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={state.meta.image} alt={state.meta.name} className="h-full w-full object-cover" />
-            </motion.div>
-            <div className="absolute -right-2 -top-2 grid h-14 w-14 place-items-center rounded-full border-2 border-black bg-white text-3xl shadow-lg">{moodFace}</div>
-            <AnimatePresence>
-              {reaction && (
-                <motion.div
-                  key={reaction + bump}
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="bubble bubble-tail bottom-[-14px] left-1/2 w-[86%] -translate-x-1/2 text-sm normal-case"
-                  style={{ position: "absolute", maxWidth: "86%" }}
-                  onAnimationComplete={() => setTimeout(() => setReaction(""), 4500)}
-                >
-                  {reaction}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              ⏭ Next day
+            </button>
+          )}
+        </div>
+      </div>
 
-          <div className="relative mt-9 rounded-2xl border border-white/10 bg-black/30 p-4">
-            <div className="text-[11px] uppercase tracking-[0.25em] text-white/40">What you notice</div>
-            <p className="mt-1 italic text-white/80">{state.omen}</p>
+      {/* today's checklist */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {steps.map((st) => (
+          <span key={st.t} className={`chip ${st.done ? "chip-done" : ""}`}>
+            {st.done ? "✓" : "○"} {st.t}
+          </span>
+        ))}
+        {state.demo && <span className="chip border-amber-300/30 text-amber-200/80">Demo mode</span>}
+      </div>
+
+      {tab === "today" && (
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(250px,300px)_minmax(0,1fr)_minmax(340px,400px)]">
+          {/* ---------------- the Chog ---------------- */}
+          <div className="card relative flex min-h-0 flex-col overflow-hidden p-4">
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              animate={{ background: `radial-gradient(420px 280px at 50% 25%, ${state.aura}40, transparent 70%)` }}
+              transition={{ duration: 1.2 }}
+            />
+            <div ref={artRef} className="relative mx-auto aspect-square w-full max-w-[240px] lg:max-w-[min(240px,30vh)]">
+              <motion.div
+                className="absolute -inset-3 rounded-[28px] blur-2xl"
+                animate={{ background: state.aura, opacity: [0.35, 0.6, 0.35] }}
+                transition={{ opacity: { duration: 3, repeat: Infinity } }}
+              />
+              <motion.div
+                key={bump}
+                className="relative h-full w-full overflow-hidden rounded-2xl border border-white/15"
+                animate={{ y: [0, -6, 0], scale: bump ? [1, 1.06, 0.97, 1] : 1 }}
+                transition={{ y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" }, scale: { duration: 0.5 } }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={state.meta.image} alt={state.meta.name} className="h-full w-full object-cover" />
+              </motion.div>
+              <div className="absolute -right-2 -top-2 grid h-11 w-11 place-items-center rounded-full border-2 border-black bg-white text-2xl shadow-lg">{moodFace}</div>
+            </div>
+            <div className="relative mt-4 min-h-[56px]">
+              <AnimatePresence mode="wait">
+                {reaction ? (
+                  <motion.p
+                    key={reaction + bump}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="rounded-xl bg-white px-3 py-2 text-center font-[family-name:var(--font-comic)] text-sm font-bold text-black"
+                    onAnimationComplete={() => setTimeout(() => setReaction(""), 4500)}
+                  >
+                    {reaction}
+                  </motion.p>
+                ) : (
+                  <motion.p key="omen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="line-clamp-3 text-center text-sm italic text-white/70">
+                    {state.omen}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="relative mt-auto grid grid-cols-2 gap-x-4 gap-y-3 pt-4">
+              <Meter label="Hunger" value={state.hunger} color="#fb7185" warn={state.hunger > 75} />
+              <Meter label="Mood" value={state.mood} color="#facc15" warn={state.mood < 25} />
+              <Meter label="Hygiene" value={state.hygiene} color="#38bdf8" warn={state.hygiene < 25} />
+              <Meter label="Energy" value={state.energy} color="#a3e635" warn={state.energy < 20} />
+            </div>
             {(state.meals.length > 0 || state.cares.length > 0) && (
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-white/50">
+              <div className="relative mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-white/45">
                 Today:
                 {state.meals.map((m, i) => (
-                  <span key={`m${i}`} className="text-lg" title={FOODS[m.food].name}>{FOODS[m.food].emoji}</span>
+                  <span key={`m${i}`} className="text-base" title={FOODS[m.food].name}>{FOODS[m.food].emoji}</span>
                 ))}
                 {state.cares.map((c, i) => (
-                  <span key={`c${i}`} className="text-lg" title={CARES[c.care].name}>{CARES[c.care].emoji}</span>
+                  <span key={`c${i}`} className="text-base" title={CARES[c.care].name}>{CARES[c.care].emoji}</span>
                 ))}
+                {state.beef && <span className="text-base" title={BEEFS[state.beef.kind].name}>{BEEFS[state.beef.kind].emoji}</span>}
               </div>
             )}
           </div>
 
-          <div className="relative mt-4 grid grid-cols-2 gap-4">
-            <Meter label="Hunger" value={state.hunger} color="#fb7185" warn={state.hunger > 75} />
-            <Meter label="Mood" value={state.mood} color="#facc15" warn={state.mood < 25} />
-            <Meter label="Hygiene" value={state.hygiene} color="#38bdf8" warn={state.hygiene < 25} />
-            <Meter label="Energy" value={state.energy} color="#a3e635" warn={state.energy < 20} />
+          {/* ---------------- today's chapter + decision ---------------- */}
+          <div className="flex min-h-0 flex-col gap-4">
+            <ChapterCard
+              state={state}
+              phase={phase}
+              line={WRITING_LINES[line]}
+              today={todayChapter}
+              progress={today?.progress ?? undefined}
+              writerBusy={today?.writerBusy}
+              color={color}
+              onRead={() => {
+                if (ready) setReadingToday(true);
+                else runChapter();
+              }}
+            />
+            <div className="card flex min-h-0 flex-1 flex-col overflow-hidden p-4">
+              {todayChapter?.choice ? (
+                <>
+                  <div className="text-grad text-[11px] font-bold uppercase tracking-[0.25em]">Your decision · shapes the next chapter</div>
+                  <p className="mt-2 text-sm font-semibold text-white">{todayChapter.choice.prompt}</p>
+                  <div className="mt-3 grid min-h-0 gap-2 overflow-y-auto pr-1">
+                    {todayChapter.choice.options.map((o) => {
+                      const picked = state.decision?.picked === o.label;
+                      return (
+                        <button
+                          key={o.id}
+                          disabled={!!state.decision || !ready}
+                          onClick={() => choose(o.id)}
+                          className={`flex items-start gap-3 rounded-xl border px-3 py-2 text-left text-sm transition ${
+                            picked ? "border-amber-300 bg-amber-300 font-semibold text-black" : state.decision || !ready ? "border-white/10 text-white/35" : "border-white/15 hover:border-amber-300 hover:bg-white/5"
+                          }`}
+                        >
+                          <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold ${picked ? "bg-black text-amber-300" : "bg-white/10 text-amber-300"}`}>{picked ? "✓" : o.id}</span>
+                          {o.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {!state.decision && <p className="mt-2 text-[11px] text-white/40">{ready ? "Read the chapter first. Once you choose, there's no going back." : "Unlocks when the chapter is drawn."}</p>}
+                </>
+              ) : (
+                <div className="grid flex-1 place-items-center text-center text-sm text-white/40">The decision appears at the end of today&apos;s chapter.</div>
+              )}
+              <div className="mt-3 border-t border-white/10 pt-3 text-xs text-white/55">
+                <span className="text-grad font-bold uppercase tracking-[0.2em]">Today in Chog City</span> · {state.event}
+              </div>
+            </div>
+          </div>
+
+          {/* ---------------- one action panel: feed / care / beef ---------------- */}
+          <div className="card flex min-h-0 flex-col p-4">
+            <div className="seg seg-full">
+              {actTabs.map((t) => (
+                <button key={t.id} onClick={() => setActTab(t.id)} data-on={actTab === t.id}>
+                  {t.emoji} {t.label} <span className="opacity-60">{t.left}/{t.max}</span>
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-white/45">
+              {actTab === "feed" && "Every food changes your Chog in its own secret way, and no two Chogs react the same."}
+              {actTab === "care" && "How you raise it shapes who it becomes. Skipped baths and late nights show up in the story too."}
+              {actTab === "beef" && "Pick another keeper's Chog and start something. It becomes the main fight of your next chapter, and lands in theirs."}
+            </p>
+
+            <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+              {actTab === "feed" && (
+                <div className="grid grid-cols-4 gap-2">
+                  {Object.values(FOODS).map((f) => (
+                    <Tile key={f.id} emoji={f.emoji} name={f.name} blurb={f.blurb} disabled={busy || state.mealsLeft <= 0} onHint={setHint} onClick={(e) => give(f.id, e)} />
+                  ))}
+                </div>
+              )}
+              {actTab === "care" && (
+                <div className="grid grid-cols-4 gap-2">
+                  {Object.values(CARES).map((c) => (
+                    <Tile key={c.id} emoji={c.emoji} name={c.name} blurb={c.blurb} disabled={busy || state.caresLeft <= 0} onHint={setHint} onClick={(e) => tend(c.id, e)} />
+                  ))}
+                </div>
+              )}
+              {actTab === "beef" &&
+                (state.beef ? (
+                  <div className="flex items-center gap-3 rounded-2xl border border-orange-400/30 bg-orange-400/10 p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={state.beef.target.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                    <p className="text-sm text-white/85">
+                      {BEEFS[state.beef.kind].emoji} You chose <b>{BEEFS[state.beef.kind].name.toLowerCase()}</b> against <b>{state.beef.target.name}</b>. It&apos;s in tomorrow&apos;s chapter, and in theirs.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-white/40">1. Pick a rival</div>
+                    <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                      {rivals.map((r) => (
+                        <button
+                          key={r.tokenId}
+                          onClick={() => setRival(r.tokenId)}
+                          className={`flex w-[68px] shrink-0 flex-col items-center gap-1 rounded-xl border p-1.5 text-[10px] transition ${rival === r.tokenId ? "border-orange-300 bg-orange-400/20" : "border-white/10 bg-white/5 hover:border-white/30"}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={r.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                          <span className="w-full truncate text-center">{r.name}</span>
+                        </button>
+                      ))}
+                      {!rivals.length && <p className="text-xs text-white/40">No other Chogs around yet.</p>}
+                    </div>
+                    <div className="mt-3 text-[11px] uppercase tracking-[0.2em] text-white/40">2. Make your move</div>
+                    <div className="mt-2 grid grid-cols-4 gap-2">
+                      {Object.values(BEEFS).map((b) => (
+                        <Tile key={b.id} emoji={b.emoji} name={b.name} blurb={b.blurb} disabled={busy || !rival} onHint={setHint} onClick={(e) => beef(b.id, e)} hot />
+                      ))}
+                    </div>
+                  </>
+                ))}
+            </div>
+            <div className="mt-3 min-h-[36px] rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-white/60">
+              {hint ||
+                (actTab === "feed" && state.mealsLeft <= 0
+                  ? "It's full for today. What will it become tomorrow?"
+                  : actTab === "care" && state.caresLeft <= 0
+                    ? "That's enough fussing for today."
+                    : actTab === "beef" && !rival && !state.beef
+                      ? "Pick a rival first."
+                      : "Hover a tile to see what it is.")}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* ---------------- right column ---------------- */}
-        <div className="flex flex-col gap-5">
-          <ChapterCard
-            state={state}
-            phase={phase}
-            line={WRITING_LINES[line]}
-            today={todayChapter}
-            progress={today?.progress ?? undefined}
-            writerBusy={today?.writerBusy}
-            color={color}
-            onRead={() => {
-              if (ready) setReadingToday(true);
-              else runChapter();
-            }}
-          />
-
-          {todayChapter?.choice && (
-            <div className="rounded-3xl border border-amber-300/30 bg-amber-300/[0.07] p-5">
-              <div className="text-[11px] uppercase tracking-[0.25em] text-amber-200/80">Your decision · shapes the next chapter</div>
-              <p className="mt-2 font-semibold text-white">{todayChapter.choice.prompt}</p>
-              <div className="mt-3 flex flex-col gap-2">
-                {todayChapter.choice.options.map((o) => {
-                  const picked = state.decision?.picked === o.label;
-                  return (
-                    <button
-                      key={o.id}
-                      disabled={!!state.decision}
-                      onClick={() => choose(o.id)}
-                      className={`rounded-xl border px-4 py-2.5 text-left text-sm transition ${
-                        picked ? "border-amber-300 bg-amber-300 font-semibold text-black" : state.decision ? "border-white/10 text-white/35" : "border-white/20 hover:border-amber-300 hover:bg-white/5"
-                      }`}
-                    >
-                      <span className="mr-2 font-bold text-amber-300">{picked ? "✓" : o.id}</span>
-                      {o.label}
-                    </button>
-                  );
-                })}
-              </div>
-              {!state.decision && <p className="mt-2 text-xs text-white/45">Read the chapter first. Once you choose, there&apos;s no going back.</p>}
-            </div>
-          )}
-
+      {tab === "life" && (
+        <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[1.3fr_1fr]">
           <LifePanel life={state.life} />
-
-          <div className="glass rounded-3xl p-4">
-            <div className="text-[11px] uppercase tracking-[0.25em] text-white/40">Today in Chog City</div>
-            <p className="mt-1 text-white/85">📰 {state.event}</p>
+          <div className="card p-5">
+            <div className="text-grad text-[11px] font-bold uppercase tracking-[0.25em]">Today in Chog City</div>
+            <p className="mt-2 text-white/85">📰 {state.event}</p>
+            <div className="text-grad mt-6 text-[11px] font-bold uppercase tracking-[0.25em]">What you notice</div>
+            <p className="mt-2 italic text-white/75">{state.omen}</p>
           </div>
+        </div>
+      )}
 
-          <div className="glass rounded-3xl p-5">
-            <div className="mb-1 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">Feed your Chog</h3>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs">{state.mealsLeft}/3 meals left</span>
-            </div>
-            <p className="mb-4 text-xs text-white/45">
-              Every food changes your Chog in its own secret way — and no two Chogs react the same. Choose carefully… or don&apos;t.
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {Object.values(FOODS).map((f) => (
-                <motion.button
-                  key={f.id}
-                  whileTap={{ scale: 0.92 }}
-                  whileHover={{ y: -3 }}
-                  disabled={busy || state.mealsLeft <= 0}
-                  onClick={(e) => give(f.id, e)}
-                  className={`group flex flex-col items-start rounded-2xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-white/30 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 ${f.id === "mystery" ? "col-span-2 sm:col-span-3 border-fuchsia-300/30 bg-fuchsia-400/10" : ""}`}
-                >
-                  <span className="text-3xl transition group-hover:scale-110">{f.emoji}</span>
-                  <span className="mt-1 text-sm font-semibold">{f.name}</span>
-                  <span className="text-[11px] leading-snug text-white/45">{f.blurb}</span>
-                </motion.button>
-              ))}
-            </div>
-            {state.mealsLeft <= 0 && <p className="mt-3 text-center text-sm text-white/60">It&apos;s full for today. What will it become tomorrow?</p>}
-          </div>
-
-          <div className="glass rounded-3xl p-5">
-            <div className="mb-1 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">Care for your Chog</h3>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs">{state.caresLeft}/3 left</span>
-            </div>
-            <p className="mb-4 text-xs text-white/45">
-              How you raise it shapes who it becomes. A bath, a bedtime, a hard word — it all shows up in the story. Skip them and that shows too.
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {Object.values(CARES).map((c) => (
-                <motion.button
-                  key={c.id}
-                  whileTap={{ scale: 0.92 }}
-                  whileHover={{ y: -3 }}
-                  disabled={busy || state.caresLeft <= 0}
-                  onClick={(e) => tend(c.id, e)}
-                  className="group flex flex-col items-start rounded-2xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-white/30 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <span className="text-3xl transition group-hover:scale-110">{c.emoji}</span>
-                  <span className="mt-1 text-sm font-semibold">{c.name}</span>
-                  <span className="text-[11px] leading-snug text-white/45">{c.blurb}</span>
-                </motion.button>
-              ))}
-            </div>
-            {state.caresLeft <= 0 && <p className="mt-3 text-center text-sm text-white/60">That&apos;s enough fussing for today.</p>}
-          </div>
-
-          <div className="glass rounded-3xl border border-orange-400/20 p-5">
-            <div className="mb-1 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-orange-200/80">🔥 Start beef</h3>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs">{state.beef ? "0/1 left" : "1/1 left"}</span>
-            </div>
-            {state.beef ? (
-              <div className="mt-3 flex items-center gap-3 rounded-2xl border border-orange-400/30 bg-orange-400/10 p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={state.beef.target.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                <p className="text-sm text-white/85">
-                  {BEEFS[state.beef.kind].emoji} You chose <b>{BEEFS[state.beef.kind].name.toLowerCase()}</b> against <b>{state.beef.target.name}</b>. It&apos;s in tomorrow&apos;s chapter — and in theirs.
-                </p>
-              </div>
-            ) : (
-              <>
-                <p className="mb-3 text-xs text-white/45">
-                  Pick another keeper&apos;s Chog and start something. Your rivalry becomes the main fight of your next chapter — and lands in their story too.
-                </p>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {rivals.map((r) => (
-                    <button
-                      key={r.tokenId}
-                      onClick={() => setRival(r.tokenId)}
-                      className={`flex w-20 shrink-0 flex-col items-center gap-1 rounded-xl border p-1.5 text-[10px] ${rival === r.tokenId ? "border-orange-300 bg-orange-400/20" : "border-white/10 bg-white/5 hover:border-white/30"}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
-                      <span className="w-full truncate text-center">{r.name}</span>
-                    </button>
-                  ))}
-                  {!rivals.length && <p className="text-xs text-white/40">No other Chogs around yet.</p>}
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {Object.values(BEEFS).map((b) => (
-                    <motion.button
-                      key={b.id}
-                      whileTap={{ scale: 0.92 }}
-                      whileHover={{ y: -3 }}
-                      disabled={busy || !rival}
-                      onClick={(e) => beef(b.id, e)}
-                      className="group flex flex-col items-start rounded-2xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-orange-300/50 hover:bg-orange-400/10 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <span className="text-2xl transition group-hover:scale-110">{b.emoji}</span>
-                      <span className="mt-1 text-sm font-semibold">{b.name}</span>
-                      <span className="text-[11px] leading-snug text-white/45">{b.blurb}</span>
-                    </motion.button>
-                  ))}
-                </div>
-                {!rival && rivals.length > 0 && <p className="mt-2 text-xs text-white/40">Pick a rival first.</p>}
-              </>
-            )}
-            {state.demo && (
+      {tab === "saga" && (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-grad font-[family-name:var(--font-dela)] text-2xl">My Saga</h3>
+            {readyChapters.length > 0 && (
               <button
-                onClick={nextDay}
-                disabled={busy || phase === "writing"}
-                className="mt-4 w-full rounded-2xl border border-amber-300/30 bg-amber-300/10 py-3 text-sm font-semibold text-amber-100 hover:bg-amber-300/20 disabled:opacity-50"
+                onClick={() => {
+                  setPicker((p) => !p);
+                  setPicked(readyChapters.map((c) => c.day));
+                }}
+                disabled={pdfQueue.length > 0}
+                className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
               >
-                ⏭ Skip to tomorrow (demo)
+                {pdfQueue.length ? `Saving PDF ${pdfTotal - pdfQueue.length + 1} of ${pdfTotal}…` : "⬇ Download chapters"}
               </button>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* saga shelf */}
-      <div className="mt-10">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-[family-name:var(--font-dela)] text-2xl">My Saga</h3>
-          {readyChapters.length > 0 && (
-            <button
-              onClick={() => {
-                setPicker((p) => !p);
-                setPicked(readyChapters.map((c) => c.day));
-              }}
-              disabled={pdfQueue.length > 0}
-              className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
-            >
-              {pdfQueue.length ? `Saving PDF ${pdfTotal - pdfQueue.length + 1} of ${pdfTotal}…` : "⬇ Download chapters"}
-            </button>
-          )}
-        </div>
-        {picker && (
-          <div className="glass mb-5 rounded-3xl p-5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="text-sm font-semibold">Which chapters?</div>
-              <div className="flex gap-3 text-xs text-white/60">
-                <button onClick={() => setPicked(readyChapters.map((c) => c.day))} className="hover:text-white">Select all</button>
-                <button onClick={() => setPicked([])} className="hover:text-white">Clear</button>
+          {picker && (
+            <div className="card mb-5 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-semibold">Which chapters?</div>
+                <div className="flex gap-3 text-xs text-white/60">
+                  <button onClick={() => setPicked(readyChapters.map((c) => c.day))} className="hover:text-white">Select all</button>
+                  <button onClick={() => setPicked([])} className="hover:text-white">Clear</button>
+                </div>
               </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {readyChapters.map((c) => {
+                  const on = picked.includes(c.day);
+                  return (
+                    <label key={c.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm ${on ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5"}`}>
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => setPicked((p) => (on ? p.filter((d) => d !== c.day) : [...p, c.day]))}
+                        className="accent-[var(--chog)]"
+                      />
+                      <span className="min-w-0 truncate">
+                        <b>Ch.{c.day}</b> · {c.title}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2 text-sm">
+                {[
+                  { v: true, t: "One PDF", d: "all chapters in a single book" },
+                  { v: false, t: "Separate PDFs", d: "one file per chapter" },
+                ].map((o) => (
+                  <button
+                    key={o.t}
+                    onClick={() => setCombine(o.v)}
+                    className={`rounded-xl border px-3 py-2 text-left ${combine === o.v ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5 hover:border-white/30"}`}
+                  >
+                    <span className="block font-semibold">{o.t}</span>
+                    <span className="block text-xs text-white/50">{o.d}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => downloadPdfs(picked, combine || picked.length === 1)}
+                disabled={!picked.length}
+                className="btn-primary mt-4 w-full py-3 text-sm"
+              >
+                {picked.length ? `⬇ Download ${picked.length} chapter${picked.length === 1 ? "" : "s"}${combine || picked.length === 1 ? "" : ` as ${picked.length} PDFs`}` : "Pick at least one chapter"}
+              </button>
+              {!combine && picked.length > 1 && <p className="mt-2 text-center text-xs text-white/40">Your browser may ask once to allow multiple downloads.</p>}
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {readyChapters.map((c) => {
-                const on = picked.includes(c.day);
-                return (
-                  <label key={c.id} className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 text-sm ${on ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5"}`}>
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      onChange={() => setPicked((p) => (on ? p.filter((d) => d !== c.day) : [...p, c.day]))}
-                      className="accent-[var(--chog)]"
-                    />
-                    <span className="min-w-0 truncate">
-                      <b>Ch.{c.day}</b> · {c.title}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2 text-sm">
-              {[
-                { v: true, t: "One PDF", d: "all chapters in a single book" },
-                { v: false, t: "Separate PDFs", d: "one file per chapter" },
-              ].map((o) => (
-                <button
-                  key={o.t}
-                  onClick={() => setCombine(o.v)}
-                  className={`rounded-xl border px-3 py-2 text-left ${combine === o.v ? "border-[var(--chog)] bg-[var(--chog)]/15" : "border-white/10 bg-white/5 hover:border-white/30"}`}
-                >
-                  <span className="block font-semibold">{o.t}</span>
-                  <span className="block text-xs text-white/50">{o.d}</span>
-                </button>
+          )}
+          {state.chapters.length === 0 ? (
+            <p className="text-white/40">No chapters yet. Read today&apos;s chapter to begin your story.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {[...state.chapters].reverse().map((c) => (
+                <div key={c.id} className="flex flex-col gap-2">
+                  <motion.button
+                    whileHover={{ y: -6, rotate: -1 }}
+                    onClick={() => readOld(c.day)}
+                    className="relative aspect-[0.68] w-full overflow-hidden rounded-lg border-2 border-black bg-[#1a1626] text-left shadow-xl"
+                  >
+                    {c.cover && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.cover} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <div className="absolute left-2 top-2 rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-black" style={{ background: roleColor(c.role.alignment) }}>
+                      Ch.{c.day}
+                    </div>
+                    <div className="absolute bottom-0 p-3">
+                      <div className="line-clamp-2 text-[10px] uppercase tracking-widest" style={{ color: roleColor(c.role.alignment) }}>{c.role.title}</div>
+                      <div className="font-[family-name:var(--font-dela)] text-base leading-tight">{c.title}</div>
+                      {c.status !== "ready" && <div className="mt-1 text-[10px] text-white/50">Still inking…</div>}
+                    </div>
+                  </motion.button>
+                  {c.status === "ready" && (
+                    <button
+                      onClick={() => downloadPdfs([c.day], true)}
+                      disabled={pdfQueue.length > 0}
+                      className="rounded-lg border border-white/15 py-1.5 text-xs text-white/70 hover:bg-white/10 disabled:opacity-50"
+                    >
+                      ⬇ PDF
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
-            <button
-              onClick={() => downloadPdfs(picked, combine || picked.length === 1)}
-              disabled={!picked.length}
-              className="mt-4 w-full rounded-2xl bg-[var(--chog)] py-3 text-sm font-semibold text-white disabled:opacity-40"
-            >
-              {picked.length ? `⬇ Download ${picked.length} chapter${picked.length === 1 ? "" : "s"}${combine || picked.length === 1 ? "" : ` as ${picked.length} PDFs`}` : "Pick at least one chapter"}
-            </button>
-            {!combine && picked.length > 1 && (
-              <p className="mt-2 text-center text-xs text-white/40">Your browser may ask once to allow multiple downloads.</p>
-            )}
-          </div>
-        )}
-        {state.chapters.length === 0 ? (
-          <p className="text-white/40">No chapters yet. Read today&apos;s chapter to begin your story.</p>
-        ) : (
-          <div className="flex gap-4 overflow-x-auto pb-3">
-            {[...state.chapters].reverse().map((c) => (
-              <div key={c.id} className="flex shrink-0 flex-col gap-2">
-              <motion.button
-                whileHover={{ y: -6, rotate: -1 }}
-                onClick={() => readOld(c.day)}
-                className="relative h-64 w-44 shrink-0 overflow-hidden rounded-lg border-2 border-black bg-[#1a1626] text-left shadow-xl"
-              >
-                {c.cover && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.cover} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                <div className="absolute left-2 top-2 rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-black" style={{ background: roleColor(c.role.alignment) }}>
-                  Ch.{c.day}
-                </div>
-                <div className="absolute bottom-0 p-3">
-                  <div className="text-[10px] uppercase tracking-widest" style={{ color: roleColor(c.role.alignment) }}>{c.role.title}</div>
-                  <div className="font-[family-name:var(--font-dela)] text-lg leading-tight">{c.title}</div>
-                  {c.status !== "ready" && <div className="mt-1 text-[10px] text-white/50">Still inking…</div>}
-                </div>
-              </motion.button>
-              {c.status === "ready" && (
-                <button
-                  onClick={() => downloadPdfs([c.day], true)}
-                  disabled={pdfQueue.length > 0}
-                  className="rounded-lg border border-white/15 py-1.5 text-xs text-white/70 hover:bg-white/10 disabled:opacity-50"
-                >
-                  ⬇ Download PDF
-                </button>
-              )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      {error && <p className="mt-6 text-center text-sm text-red-300">{error}</p>}
+      {error && <p className="mt-3 text-center text-sm text-red-300">{error}</p>}
 
       {particles.map((p) => (
         <motion.span
@@ -760,7 +755,7 @@ function ChapterCard({
     >
       <div className="fx fx-focuslines opacity-20" />
       <div className="relative flex items-center gap-4 p-5">
-        <div className="relative h-28 w-20 shrink-0 overflow-hidden rounded-md border-2 border-black bg-black/60 shadow-xl">
+        <div className="relative h-32 w-[88px] shrink-0 overflow-hidden rounded-md border-2 border-black bg-black/60 shadow-xl lg:h-40 lg:w-28">
           {today?.cover.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={today.cover.image} alt="" className="h-full w-full object-cover" />
@@ -837,6 +832,42 @@ function LifePanel({ life }: { life: Life }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** One action: same size everywhere, so every grid lines up. Details show in the hint bar. */
+function Tile({
+  emoji,
+  name,
+  blurb,
+  disabled,
+  hot,
+  onClick,
+  onHint,
+}: {
+  emoji: string;
+  name: string;
+  blurb: string;
+  disabled: boolean;
+  hot?: boolean;
+  onClick: (e: React.MouseEvent) => void;
+  onHint: (s: string) => void;
+}) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.92 }}
+      whileHover={{ y: -2 }}
+      disabled={disabled}
+      onClick={onClick}
+      onMouseEnter={() => onHint(`${emoji} ${name} — ${blurb}`)}
+      onMouseLeave={() => onHint("")}
+      onFocus={() => onHint(`${emoji} ${name} — ${blurb}`)}
+      title={blurb}
+      className={`tile ${hot ? "tile-hot" : ""}`}
+    >
+      <span className="text-2xl leading-none">{emoji}</span>
+      <span className="line-clamp-2 text-center text-[10.5px] font-semibold leading-tight">{name}</span>
+    </motion.button>
   );
 }
 

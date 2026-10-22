@@ -1,0 +1,94 @@
+[
+ {
+  "f": "/showcase/p0.webp",
+  "shape": "cover",
+  "color": true
+ },
+ {
+  "f": "/showcase/p1.webp",
+  "shape": "square",
+  "color": false,
+  "line": "Grey harvest spreads silence",
+  "cap": "Sky Gardens mourn."
+ },
+ {
+  "f": "/showcase/p2.webp",
+  "shape": "square",
+  "color": false,
+  "line": "Stop him!",
+  "cap": "Run!"
+ },
+ {
+  "f": "/showcase/p3.webp",
+  "shape": "wide",
+  "color": false,
+  "line": "Show yourself!",
+  "cap": "Who are you?"
+ },
+ {
+  "f": "/showcase/p5.webp",
+  "shape": "square",
+  "color": false,
+  "line": "",
+  "cap": "No stopping me!"
+ },
+ {
+  "f": "/showcase/p6.webp",
+  "shape": "square",
+  "color": false,
+  "line": "Stay safe!",
+  "cap": "Help me!"
+ },
+ {
+  "f": "/showcase/p8.webp",
+  "shape": "square",
+  "color": false,
+  "line": "A masked Chog has been seen stealing a convoy!",
+  "cap": "A shadow stalks the streets."
+ },
+ {
+  "f": "/showcase/p9.webp",
+  "shape": "wide",
+  "color": false,
+  "line": "Join us, or risk losing the key.",
+  "cap": "A prize awaits: the pantry key."
+ },
+ {
+  "f": "/showcase/p10.webp",
+  "shape": "cover",
+  "color": true
+ },
+ {
+  "f": "/showcase/p11.webp",
+  "shape": "square",
+  "color": false,
+  "line": "Who is that?",
+  "cap": "That mask... looks like me!"
+ },
+ {
+  "f": "/showcase/p12.webp",
+  "shape": "square",
+  "color": false,
+  "line": "Follow me!",
+  "cap": "I have to catch you!"
+ },
+ {
+  "f": "/showcase/p13.webp",
+  "shape": "wide",
+  "color": true,
+  "line": "No one stops me!",
+  "cap": "Red Spin Dash!"
+ },
+ {
+  "f": "/showcase/p14.webp",
+  "shape": "square",
+  "color": false,
+  "line": "What the—",
+  "cap": "BAM!"
+ },
+ {
+  "f": "/showcase/p16.webp",
+  "shape": "cover",
+  "color": true
+ }
+]
