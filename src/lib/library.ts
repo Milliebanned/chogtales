@@ -45,11 +45,18 @@ export const pubKey = (chapterId: string) => `pub:${chapterId}`;
 const unlockKey = (pubId: string, wallet: string) => `unlock:${pubId}:${wallet.toLowerCase()}`;
 const readsKey = (pubId: string) => `reads:${pubId}`;
 
+/**
+ * Who gets paid for the built-in paid chapters: the ChogTales wallet set in
+ * LIBRARY_PAYOUT_WALLET. Until it's set those chapters are listed but can't be bought.
+ */
+export const PAYOUT_WALLET = (process.env.LIBRARY_PAYOUT_WALLET || "").toLowerCase();
+const isWallet = (a: string) => /^0x[0-9a-f]{40}$/i.test(a);
+
 function seedEntry(s: Seed): Published {
   const c = s.chapter;
   return {
     id: s.id,
-    author: s.author,
+    author: s.price === "0" ? s.author : isWallet(PAYOUT_WALLET) ? PAYOUT_WALLET : "ChogTales",
     price: s.price,
     publishedAt: s.publishedAt,
     reads: s.reads,
@@ -117,6 +124,7 @@ const erc20 = parseAbi(["event Transfer(address indexed from, address indexed to
  * the price in $CHOG from the buyer to the author. Each transaction unlocks once.
  */
 export async function verifyAndUnlock(pub: Published, buyer: string, txHash: `0x${string}`) {
+  if (!isWallet(pub.author)) throw new Error("This chapter can't be bought yet: its payout wallet isn't set");
   if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) throw new Error("That doesn't look like a transaction hash");
   if (await kv.get(`paytx:${txHash.toLowerCase()}`)) throw new Error("That payment was already used to unlock a chapter");
   let receipt;
@@ -142,4 +150,30 @@ export async function verifyAndUnlock(pub: Published, buyer: string, txHash: `0x
   if (paid < need) throw new Error("That transaction didn't send enough $CHOG to the author");
   await kv.set(`paytx:${txHash.toLowerCase()}`, { pub: pub.id, buyer: buyer.toLowerCase(), at: Date.now() });
   await kv.set(unlockKey(pub.id, buyer), txHash);
+}
+
+/** Which built-in seed a /api/library/art file belongs to, and whether this viewer may see it. */
+export async function seedArtLocked(file: string, session: Session | null) {
+  const [slug, name] = file.split("/");
+  const seed = SEEDS.find((x) => x.id === `seed-${slug}`);
+  if (!seed) return true;
+  if (seed.price === "0" || name === "cover.webp" || name.startsWith("p0-")) return false;
+  return !(await canRead(seedEntry(seed), session));
+}
+
+let priceCache: { at: number; usd: number | null } = { at: 0, usd: null };
+/** Live $CHOG price in USD from DexScreener (most liquid Monad pair), cached 10 minutes. */
+export async function chogUsd(): Promise<number | null> {
+  if (Date.now() - priceCache.at < 10 * 60_000) return priceCache.usd;
+  try {
+    const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${CHOG_TOKEN}`, { signal: AbortSignal.timeout(6000) });
+    const j = (await r.json()) as { pairs?: { chainId: string; priceUsd?: string; liquidity?: { usd?: number }; baseToken: { address: string } }[] };
+    const best = (j.pairs ?? [])
+      .filter((p) => p.chainId === "monad" && p.baseToken.address.toLowerCase() === CHOG_TOKEN && p.priceUsd)
+      .sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0];
+    priceCache = { at: Date.now(), usd: best ? Number(best.priceUsd) : null };
+  } catch {
+    priceCache = { at: Date.now() - 8 * 60_000, usd: priceCache.usd }; // retry soon
+  }
+  return priceCache.usd;
 }

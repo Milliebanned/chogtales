@@ -52,7 +52,7 @@ export default function Docs() {
           CHOGTALES <span>Docs</span>
         </Link>
         <div>
-          <Link href="/library">Library</Link>
+          <Link href="/library">Manga Library</Link>
           <a href="/chogtales-docs.pdf" download className="docs-pdf">
             ⬇ PDF
           </a>

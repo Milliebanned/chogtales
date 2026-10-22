@@ -48,6 +48,38 @@ function CTAs({ isConnected, onSign, onDemo, loading, center }: { isConnected: b
   );
 }
 
+/** The way into the Manga Library: obvious, right under the main buttons. */
+function LibraryCTA() {
+  const covers = ["/library/chog-1463-grey-harvest/cover.webp", "/library/chog-1464-soup-shadows/cover.webp", "/showcase/p13.webp"];
+  return (
+    <a
+      href="/library"
+      className="group mt-5 flex max-w-[520px] items-center gap-4 rounded-2xl border border-violet-400/40 bg-violet-500/[0.12] p-3 pr-5 shadow-[0_10px_40px_-15px_rgba(124,58,237,0.9)] transition hover:border-violet-300 hover:bg-violet-500/20"
+    >
+      <span className="flex shrink-0 -space-x-5">
+        {covers.map((c, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={c}
+            src={c}
+            alt=""
+            className="h-16 w-12 rounded-md border-2 border-[#0b0910] object-cover shadow-lg transition duration-300 group-hover:translate-y-[-2px]"
+            style={{ transform: `rotate(${(i - 1) * 8}deg)`, transitionDelay: `${i * 40}ms` }}
+          />
+        ))}
+      </span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-2 text-base font-semibold text-white">
+          📚 Manga Library
+          <span className="rounded-full bg-violet-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>
+        </span>
+        <span className="mt-0.5 block text-sm text-white/65">Read other keepers&apos; manga, or buy one with $CHOG</span>
+      </span>
+      <span className="ml-auto text-xl text-violet-200 transition group-hover:translate-x-1">→</span>
+    </a>
+  );
+}
+
 /* ---------------------------------------------------------------- */
 /* 1 · hero                                                          */
 /* ---------------------------------------------------------------- */
@@ -89,7 +121,10 @@ function Hero(props: { isConnected: boolean; onSign: () => void; onDemo: () => v
           <CTAs {...props} />
           {props.error && <p className="mt-4 text-sm text-red-300">{props.error}</p>}
         </motion.div>
-        <motion.div variants={rise} custom={4} className="mt-10 flex flex-wrap gap-8">
+        <motion.div variants={rise} custom={4}>
+          <LibraryCTA />
+        </motion.div>
+        <motion.div variants={rise} custom={5} className="mt-8 flex flex-wrap gap-8">
           {stats.map((s) => (
             <div key={s.t}>
               <div className="text-white font-[family-name:var(--font-dela)] text-3xl">{s.n}</div>

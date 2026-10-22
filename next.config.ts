@@ -11,6 +11,8 @@ const STUBBED = [
 
 const nextConfig: NextConfig = {
   images: { unoptimized: true },
+  // the paid Library art is read from disk by this route, so ship it with the function
+  outputFileTracingIncludes: { "/api/library/art": ["./library-private/**/*"] },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

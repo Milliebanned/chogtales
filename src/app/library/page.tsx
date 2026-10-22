@@ -39,10 +39,17 @@ const loginMessage = (address: string, issuedAt: number) =>
 
 const short = (a: string) => (a.startsWith("0x") ? `${a.slice(0, 6)}…${a.slice(-4)}` : a.startsWith("demo") ? "a demo keeper" : a);
 const priceLabel = (p: string) => (p === "0" ? "Free" : `${Number(p).toLocaleString()} $CHOG`);
+const usdLabel = (p: string, usd: number | null) => {
+  if (p === "0" || !usd) return "";
+  const v = Number(p) * usd;
+  return `≈ $${v < 0.1 ? v.toFixed(3) : v < 10 ? v.toFixed(2) : v.toFixed(0)}`;
+};
+const forSale = (it: { author: string; price: string }) => it.price === "0" || it.author.startsWith("0x");
 
 export default function Library() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [viewer, setViewer] = useState<string | null>(null);
+  const [usd, setUsd] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "free" | "paid">("all");
   const [open, setOpen] = useState<{ item: Item; chapter: Chapter; locked: boolean } | null>(null);
   const [reading, setReading] = useState<Chapter | null>(null);
@@ -61,6 +68,7 @@ export default function Library() {
     const j = await r.json();
     setItems(j.items ?? []);
     setViewer(j.viewer);
+    setUsd(j.chogUsd ?? null);
   }, []);
   useEffect(() => {
     load();
@@ -141,7 +149,7 @@ export default function Library() {
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/" className="rounded-full px-3 py-1.5 text-xs uppercase tracking-widest text-white/60 hover:text-white">
-            Make yours
+            Make your own
           </Link>
           <Link href="/docs" className="rounded-full border border-white/15 px-3 py-1.5 text-xs uppercase tracking-widest text-white/80 hover:bg-white/10">
             Read docs
@@ -153,14 +161,14 @@ export default function Library() {
       <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-3xl pt-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-violet-200">
-            <span className="h-1.5 w-1.5 rounded-full bg-violet-400" /> The Library
+            <span className="h-1.5 w-1.5 rounded-full bg-violet-400" /> Manga Library
           </span>
           <h1 className="mt-5 font-[family-name:var(--font-dela)] text-[clamp(36px,5.5vw,68px)] leading-[0.95]">
-            Read what other Chogs <span className="accent">became.</span>
+            Read other Chogs&apos; manga, or <span className="accent">buy one</span> with $CHOG.
           </h1>
           <p className="mt-5 max-w-xl text-white/60">
-            Keepers publish their Chog&apos;s chapters here, free or for $CHOG. Paid chapters show the cover and first page; unlocking sends $CHOG straight to the
-            keeper who made it. ChogTales takes nothing.
+            Keepers publish their Chog&apos;s chapters here, free or for $CHOG. Paid chapters let you read the cover and first page; connect your wallet, pay in
+            $CHOG on Monad, and the whole chapter is yours. The $CHOG goes straight to the keeper who made it.
           </p>
         </motion.div>
 
@@ -178,7 +186,10 @@ export default function Library() {
               </button>
             ))}
           </div>
-          <span className="text-xs text-white/40">{items ? `${shown.length} chapter${shown.length === 1 ? "" : "s"}` : "Loading…"}</span>
+          <span className="text-xs text-white/40">
+            {items ? `${shown.length} chapter${shown.length === 1 ? "" : "s"}` : "Loading…"}
+            {usd ? ` · 1 $CHOG ≈ $${usd.toFixed(5)}` : ""}
+          </span>
         </div>
         {status && !open && <p className="mt-4 text-sm text-red-300">{status}</p>}
 
@@ -204,6 +215,9 @@ export default function Library() {
                 >
                   {it.mine ? "Yours" : it.price !== "0" && it.unlocked ? "Unlocked" : priceLabel(it.price)}
                 </span>
+                {it.price !== "0" && !it.unlocked && !it.mine && usd && (
+                  <span className="absolute right-2 top-9 rounded-full bg-black/70 px-2 py-0.5 text-[10px] text-white/80">{usdLabel(it.price, usd)}</span>
+                )}
                 <div className="absolute bottom-0 p-3">
                   <div className="line-clamp-1 text-[10px] uppercase tracking-widest" style={{ color: roleColor(it.role.alignment) }}>
                     {it.role.title}
@@ -250,14 +264,21 @@ export default function Library() {
               <div className="border-t border-white/10 p-5">
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm text-white/60">Unlock the full chapter</span>
-                  <span className="font-[family-name:var(--font-dela)] text-2xl">{priceLabel(open.item.price)}</span>
+                  <span className="text-right">
+                    <span className="block font-[family-name:var(--font-dela)] text-2xl">{priceLabel(open.item.price)}</span>
+                    {usd && <span className="block text-xs text-white/45">{usdLabel(open.item.price, usd)}</span>}
+                  </span>
                 </div>
                 <p className="mt-1 text-xs text-white/40">Paid on Monad, straight to the keeper&apos;s wallet. Unlocks forever for your wallet.</p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <button onClick={() => setReading(open.chapter)} className="btn-ghost py-3 text-sm">
                     Read preview
                   </button>
-                  {isConnected ? (
+                  {!forSale(open.item) ? (
+                    <button disabled className="btn-primary py-3 text-sm">
+                      On sale soon
+                    </button>
+                  ) : isConnected ? (
                     <button onClick={() => unlock(open.item)} disabled={busy} className="btn-primary py-3 text-sm">
                       {busy ? "Working…" : `Unlock · ${priceLabel(open.item.price)}`}
                     </button>
