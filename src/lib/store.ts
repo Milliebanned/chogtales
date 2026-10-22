@@ -78,5 +78,15 @@ function fileKV(): KV {
   };
 }
 
-export const kv: KV = url && token ? redisKV() : fileKV();
+// a serverless host has no writable disk: fail loudly instead of losing every save
+if (!(url && token) && process.env.VERCEL)
+  console.error("No Redis configured: add Upstash Redis (UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN) to the Vercel project");
+export const kv: KV = url && token ? redisKV() : process.env.VERCEL ? missingKV() : fileKV();
+
+function missingKV(): KV {
+  const fail = async (): Promise<never> => {
+    throw new Error("Storage isn't set up yet: connect Upstash Redis to this Vercel project and redeploy.");
+  };
+  return { get: fail, set: fail, sadd: fail, smembers: fail };
+}
 export const storeKind = url && token ? "upstash" : "file";
